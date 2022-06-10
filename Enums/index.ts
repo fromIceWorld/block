@@ -1,2 +1,3 @@
 export * from './attributeType';
-export * from './ElementType';
+export * from './elementType';
+export * from './TView';
