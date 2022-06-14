@@ -2,6 +2,9 @@ import { AttributeType } from '../Enums/attributeType';
 import { elementType } from '../Enums/index';
 import { TemplateView } from '../TView/TemplateView';
 
+/**
+ * @public finAttributes 静态属性与动态属性合并后的最终attributes
+ */
 class elementNode {
     type: number = elementType.Element;
     tagName: string;
@@ -10,6 +13,9 @@ class elementNode {
     component: Function[] = new Array();
     attributes = new Array();
     TView?: TemplateView;
+    finAttributes: {
+        [propName: string]: any;
+    };
     constructor(
         tagName: string,
         dynamicStyle: string[][],
@@ -26,6 +32,7 @@ class elementNode {
             (fnConfig) => new Function(...fnConfig)
         );
         this.attributes[AttributeType.staticAttribute] = attributes;
+        this.finAttributes = Object.assign({}, attributes);
         this.attributes[AttributeType.event] = events;
         this.attributes[AttributeType.dynamicAttrubute] = Object.create({});
         Object.keys(dynamicAttributes).map((key) => {

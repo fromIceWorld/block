@@ -12,5 +12,6 @@ enum TViewIndex {
     Slots,
     Injector,
     Module,
+    TNode,
 }
 export { TViewIndex };

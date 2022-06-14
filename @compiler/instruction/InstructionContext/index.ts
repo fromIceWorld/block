@@ -7,8 +7,14 @@ import { TemplateView } from '../../../TView/TemplateView';
 interface Attributes {
     [key: string]: Function;
 }
+interface finAttributes {
+    [key: string]: any;
+}
 
 const offset = 20;
+/**
+ * 指令集运行栈，控制上下文的 TView
+ */
 let instructionIFrameStates: any = {
         currentTView: null,
     },
@@ -31,12 +37,6 @@ function popContext() {
         preTView = tView[TViewIndex.Parent]!;
     setCurrentTView(preTView);
 }
-/**
- * 引导根组件生成视图view
- *
- * @param component 根组件
- */
-function bootstrapComponent() {}
 /**
  * 建立真实DOM元素
  *
@@ -84,7 +84,7 @@ function elementEnd(tagName: string) {
 function updateProperty(index: number) {
     let TView = currentTView(),
         tNode = TView[index + offset];
-    let { attributes } = tNode;
+    let { attributes, finAttributes } = tNode;
     let [
         dynamicStyle,
         dynamicClass,
@@ -95,13 +95,13 @@ function updateProperty(index: number) {
         event,
     ] = attributes;
     if (Object.keys(dynamicAttrubute).length > 0) {
-        updateProp(index, dynamicAttrubute);
+        updateProp(index, dynamicAttrubute, finAttributes);
     }
     if (dynamicStyle.length > 0) {
-        updateStyle(index, dynamicStyle);
+        updateStyle(index, dynamicStyle, finAttributes);
     }
     if (dynamicClass.length > 0) {
-        updateClass(index, dynamicClass);
+        updateClass(index, dynamicClass, finAttributes);
     }
 }
 /**
@@ -109,13 +109,19 @@ function updateProperty(index: number) {
  * @param index 节点索引
  * @param attributes 动态属性
  */
-function updateProp(index: number, attributes: Attributes) {
+function updateProp(
+    index: number,
+    attributes: Attributes,
+    finAttributes: finAttributes
+) {
     let TView = currentTView(),
         LView = currentLView(),
         native = LView[index + offset],
         context = TView[TViewIndex.Context];
     Object.keys(attributes).forEach((key) => {
-        native.setAttribute(key, attributes[key](context));
+        let value = attributes[key](context);
+        native.setAttribute(key, value);
+        finAttributes[key] = value;
     });
 }
 /**
@@ -123,11 +129,16 @@ function updateProp(index: number, attributes: Attributes) {
  * @param index 节点索引
  * @param attributes 动态属性
  */
-function updateClass(index: number, classes: Function[]) {
+function updateClass(
+    index: number,
+    classes: Function[],
+    finAttributes: finAttributes
+) {
     let TView = currentTView(),
         LView = currentLView(),
         native = LView[index + offset],
-        context = TView[TViewIndex.Context];
+        context = TView[TViewIndex.Context],
+        result;
     let preClass = native.getAttribute('class') || '',
         preclassObj = Object.create({}),
         mergeClass: string[] = [];
@@ -145,7 +156,9 @@ function updateClass(index: number, classes: Function[]) {
             mergeClass.push(cla);
         }
     });
-    native.setAttribute('class', mergeClass.join(' '));
+    result = mergeClass.join(' ');
+    native.setAttribute('class', result);
+    finAttributes['class'] = result;
 }
 /**
  * 更新节点style
@@ -153,7 +166,11 @@ function updateClass(index: number, classes: Function[]) {
  * @param index 节点索引
  * @param styles 节点样式函数
  */
-function updateStyle(index: number, fns: Function[]) {
+function updateStyle(
+    index: number,
+    fns: Function[],
+    finAttributes: finAttributes
+) {
     let TView = currentTView(),
         LView = currentLView(),
         native = LView[index + offset],
@@ -166,6 +183,7 @@ function updateStyle(index: number, fns: Function[]) {
     for (let key of Object.keys(styleObj)) {
         styleMap.set(key, styleObj[key]);
     }
+    finAttributes['style'] = native.getAttribute('style');
 }
 /**
  * 创建文本节点
@@ -311,7 +329,7 @@ function resolveDirective(tagName: string, index: number) {
         if (k == tagName && v == null) {
             TView[TViewIndex.Children].push(index);
             component = dir;
-            TNode['TView'] = new TemplateView(component, native, TView);
+            TNode['TView'] = new TemplateView(component, TNode, native, TView);
         } else {
             if (
                 (k == 'class' && Object.keys(classes).join(' ') == v) ||
@@ -338,7 +356,7 @@ function linkParentChild(el: Element | Text | Comment, index: number) {
         elementStack.push(el);
     }
 }
-function bootstrapView(rootComponent: { new (): any }, module: any) {
+function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
     rootTView.attach();
     console.log(instructionIFrameStates, rootTView);

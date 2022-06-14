@@ -13,7 +13,9 @@ interface Configuration {
 }
 let index = 0;
 /**
- * @param treeNode 模板抽象数据
+ * 接收 tokenTree,将token解析成指令集。
+ *
+ * @param treeNode template 解析后生成的 tokenTree
  * @param configuration 配置参数
  */
 class Instruction {
@@ -37,6 +39,7 @@ class Instruction {
         );
     }
     init(treeNode: TNode[]) {
+        index = 0; // 初始化全局节点索引
         this.treeNode = treeNode;
         this.createFn = ``;
         this.updateFn = ``;
@@ -223,68 +226,4 @@ class Instruction {
                                         }, ${index});`;
     }
 }
-let tree = [
-    {
-        tagName: 'div',
-        type: 1,
-        attributes: [
-            'data-angular',
-            'name',
-            '=',
-            'angular',
-            '&style',
-            '=',
-            '{width: dataWidth}',
-            '@change',
-            '=',
-            "go($event,'query')",
-        ],
-        children: [
-            {
-                content: '{{dataWidth}}子元素:【{{dataWidth}}】{{dataWidth}}',
-                type: 3,
-            },
-            {
-                tagName: 'div',
-                type: 1,
-                attributes: [
-                    'style',
-                    '=',
-                    'width: 100px;height: 100px;background-color:#e5e0e1;',
-                    '&style',
-                    '=',
-                    '{width: dataWidth}',
-                    '&name',
-                    '=',
-                    'block',
-                    '@click',
-                    '=',
-                    'emit($event,123)',
-                ],
-            },
-        ],
-    },
-    {
-        tagName: 'p',
-        type: 1,
-        attributes: [
-            'class',
-            '=',
-            'forP bindClass2',
-            '&class',
-            '=',
-            '{bindClass1: class1,bindClass2: class2}',
-        ],
-    },
-    {
-        tagName: 'app-child',
-        type: 1,
-        attributes: [],
-    },
-    {
-        type: 8,
-        content: ' 注释信息',
-    },
-];
-// 临时数据 tree，无position
 export { Instruction };

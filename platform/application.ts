@@ -5,33 +5,37 @@ import {
     StaticInjector,
     StaticProvider,
 } from '../Injector/index';
+import { TemplateView } from '../TView/TemplateView';
 
 const componentFromModule = '$$_Bind_Module',
     moduleCore: string = '$$_Module_Core';
 /**
- * 平台是顶级作用域，创建应用，
- * 其下注册模块，
- * 模块下的组件构成视图
+ * 平台是顶级作用域，下级是应用，应用下注册模块，
+ * 模块下的组件构成视图。
  *
- * @param injector 平台依赖注入
+ * 平台引导模块启动，通过实例化应用，将模块注册到应用上
+ * 平台
+ *
+ * @param @public  injector 平台依赖
+ * @public applications 平台上运行的应用
  */
 class PlatformRef {
     injector;
-    registeredModules?: moduleCollection;
-    rootModules = new Map();
+    applications: Set<Application> = new Set();
     constructor(injector: StaticInjector) {
         this.injector = injector;
     }
+    /**
+     *平台引导 module
+     * @param module 根模块
+     */
     bootstrapModule(module: any) {
         let { $bootstrap } = module;
-        this.registeredModules = new moduleCollection(module);
-        let moduleRef = new module();
-        this.rootModules.set(module, moduleRef);
+        let app = new Application(module);
+        this.applications.add(app);
         if ($bootstrap.length > 0) {
-            this.bootstrapComponent(
-                $bootstrap[0],
-                this.rootModules.get(module)
-            );
+            this.bootstrapComponent($bootstrap[0], app);
+            // app['rootTView']?.detectChanges();
         }
     }
     /**
@@ -39,20 +43,9 @@ class PlatformRef {
      *
      * @param rootComponent 启动的根组件
      */
-    bootstrapComponent(rootComponent: { new (): any }, module: any) {
-        let rootTView = bootstrapView(rootComponent, module);
-        module['TView'] = rootTView;
-    }
-    getExternalDeclarations(importModules: Array<any>) {
-        let exportDeclarations = new Array();
-        for (let module of importModules) {
-            let { $imports, $exports } = module;
-            exportDeclarations = exportDeclarations.concat(
-                $exports,
-                this.getExternalDeclarations($imports)
-            );
-        }
-        return exportDeclarations;
+    bootstrapComponent(rootComponent: { new (): any }, app: Application) {
+        let rootTView = bootstrapView(rootComponent);
+        app['rootTView'] = rootTView;
     }
 }
 /**
@@ -64,16 +57,18 @@ class PlatformRef {
  * @public modules 模块
  * @public injector 模块依赖注入
  * @public inRange 当前模块的声明的[组件，指令，pipe]，及导入的模块所导出的[组件，指令，pipe]
+ * @public rootTView 当前应用运行时的 TemplateView
  */
-class moduleCollection {
+class Application {
     modules: Map<any, any> = new Map();
     injector?: Injector;
     inRange: Array<any> = [];
+    rootTView?: TemplateView;
     constructor(module: any) {
         this.registerModule(module, this);
         module['moduleCore'] = this;
     }
-    registerModule(module: any, root: moduleCollection) {
+    registerModule(module: any, root: Application) {
         let { $declarations, $imports, $exports, $providers, $bootstrap } =
             module;
         this.collectProvider(module, $providers);
@@ -116,15 +111,10 @@ function collectRunDependency(
         return allProviders.concat(extraProvides);
     };
 }
-function polyModule(module: any) {
-    let { $declarations, $imports, $exports, $providers, $bootstrap } = module;
-    let root = new moduleCollection(module);
-}
 function createPlatform(injector: Injector) {
     return injector.get(PlatformRef);
 }
 
-class Application {}
 export {
     PlatformRef,
     collectRunDependency,

@@ -30,7 +30,6 @@ function PlatformBrowserDynamic(
     let platformRef = createPlatform(platFomrInjector);
     (window as any)['platformRef'] = platformRef;
     console.log(platformRef);
-
     return platformRef;
 }
 

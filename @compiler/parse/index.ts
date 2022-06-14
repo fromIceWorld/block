@@ -3,6 +3,7 @@ import { Position } from './position/index';
 import { CommentTNode, ElementTNode, TextTNode } from './TNode/index';
 const EscapeCharacter = ['\n'];
 /**
+ * 解析template,生成 tokenTree
  * @param template html字符串
  */
 class ParseTemplate {

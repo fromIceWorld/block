@@ -23,7 +23,7 @@ import { Component } from '../decorators/index';
         >
             我是:{{ exp }},{{ exp2 }}
         </p>
-        <app-child></app-child>
+        <app-child &value="block" @childEmit="console($event)"></app-child>
         <!-- 注释信息-->`,
 })
 class MyComponent {
@@ -36,6 +36,9 @@ class MyComponent {
     constructor() {}
     emit(e: EventTarget, value: any) {
         console.log(e, value, this);
+    }
+    console(e: EventTarget) {
+        console.log('接收到子组件的emit', e);
     }
 }
 export { MyComponent };
