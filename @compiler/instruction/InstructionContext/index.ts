@@ -1,7 +1,7 @@
 import { resolveSelector } from '../../../common/index';
 import { θd } from '../../../DocumentAPI/index';
 import { AttributeType, elementType, TViewIndex } from '../../../Enums/index';
-import { elementNode, textNode } from '../../../TNode/index';
+import { commentNode, elementNode, textNode } from '../../../TNode/index';
 import { TemplateView } from '../../../TView/TemplateView';
 
 interface Attributes {
@@ -10,7 +10,9 @@ interface Attributes {
 interface finAttributes {
     [key: string]: any;
 }
-
+interface keyValue {
+    [key: string]: any;
+}
 const offset = 20;
 /**
  * 指令集运行栈，控制上下文的 TView
@@ -18,7 +20,7 @@ const offset = 20;
 let instructionIFrameStates: any = {
         currentTView: null,
     },
-    elementStack: Array<Element | Text | Comment> = new Array();
+    elementStack: Array<number> = new Array();
 function currentTView() {
     return instructionIFrameStates.currentTView;
 }
@@ -44,35 +46,59 @@ function popContext() {
  * @param index 节点索引
  */
 function elementStart(tagName: string, index: number) {
-    let LView = currentLView(),
-        dom = θd.createElement(tagName);
-    LView[offset + index] = dom;
-    // 建立抽象节点
+    // 解析组件，指令建立抽象节点
     let tNode = resolveNode(tagName, index);
-    tNode.native = dom;
+    createNative(tNode, index);
+    resolveDirective(tagName, index);
     // 添加静态属性
-    addStaticAttributes(dom, tNode.attributes);
-    linkParentChild(dom, index);
+    addStaticAttributes(
+        tNode.native!,
+        tNode.attributes[AttributeType.staticAttribute]
+    );
+    progressContext(index);
 }
-function addStaticAttributes(dom: Element, attributes: string[]) {
-    let staticAttribute = attributes[AttributeType.staticAttribute];
-    if (staticAttribute) {
-        addStaticAttribute(dom, staticAttribute);
+function createNative(tNode: elementNode, index: number) {
+    let TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        { tagName, finAttributes } = tNode,
+        slotName: string = finAttributes['name'],
+        dom = θd.createElement(tagName);
+    if (tagName == 'slot') {
+        let slotsIndex = TView[TViewIndex.Slots],
+            filters,
+            slotsDOM = slotsIndex.map(
+                (index: number) =>
+                    TView[TViewIndex.Parent][TViewIndex.LView][index + offset]
+            );
+        filters = slotsDOM.filter(
+            (d: Element) => d.getAttribute('slot') == slotName
+        );
+        dom.append(...filters);
+    } else {
     }
+    tNode.native = dom;
+    LView[offset + index] = dom;
 }
-function addStaticAttribute(dom: Element, attributes: any) {
+function addStaticAttributes(dom: Element, attributes: keyValue = {}) {
     Object.keys(attributes).forEach((key) => {
         dom.setAttribute(key, attributes[key]);
     });
 }
 function elementEnd(tagName: string) {
-    let TView = currentTView(),
-        rootElements = TView[TViewIndex.RootElements];
-    let elementStart = elementStack.pop() as Element;
+    const TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        index = elementStack.pop()!,
+        tNode = TView[index + offset];
+    let rootElements = TView[TViewIndex.RootElements];
+    let elementStart = LView[index + offset];
     if (elementStart.localName == tagName) {
         if (elementStack.length == 0) {
-            rootElements.push(elementStart);
+            rootElements.push(index);
         }
+    }
+    // 当前节点是组件，就将slot索引存进 [TViewIndex.Slots];
+    if (tNode.TView) {
+        tNode.TView[TViewIndex.Slots] = tNode.children;
     }
 }
 
@@ -196,10 +222,10 @@ function creatText(index: number, content: string) {
         LView = TView[TViewIndex.LView],
         text = θd.createTextNode(content);
     LView[offset + index] = text;
-    TView[offset + index] = new textNode(content);
+    TView[offset + index] = new textNode(content, text);
     // 解析 text,确定text的属性
     // resolveText()
-    linkParentChild(text, index);
+    progressContext(index);
 }
 /**
  * 更新文本节点
@@ -224,10 +250,10 @@ function createComment(index: number, content: string) {
         LView = TView[TViewIndex.LView],
         comment = θd.createComment(content);
     LView[offset + index] = comment;
-    TView[offset + index] = new textNode(content);
+    TView[offset + index] = new commentNode(content, comment);
     // 解析 text,确定text的属性
     // resolveText()
-    linkParentChild(comment, index);
+    progressContext(index);
 }
 /**
  * 为节点添加事件
@@ -242,10 +268,11 @@ function listener(eventName: string, callback: Function, index: number) {
     el.addEventListener(eventName, callback);
 }
 /**
- *解析节点，判断节点上是否有特殊属性 [组件， 指令]
+ * 解析节点并判断节点上是否有特殊属性 [组件， 指令]
  *
  * @param tagName 节点名称
  * @param index 节点索引
+ * @return tNode 节点抽象数据
  */
 function resolveNode(tagName: string, index: number) {
     let TView = currentTView(),
@@ -258,6 +285,7 @@ function resolveNode(tagName: string, index: number) {
         } = resolveAttributes(index);
     let tNode = new elementNode(
         tagName,
+        index,
         dynamicStyle,
         dynamicClasses,
         attributes,
@@ -265,7 +293,6 @@ function resolveNode(tagName: string, index: number) {
         dynamicAttributes
     );
     TView[offset + index] = tNode;
-    resolveDirective(tagName, index);
     return tNode;
 }
 /**
@@ -321,15 +348,20 @@ function resolveDirective(tagName: string, index: number) {
     let TView = currentTView(),
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index];
-    let { classes, attributes, directives, component } = TNode;
+    let { classes, attributes, directives } = TNode;
     const Directives = TView[TViewIndex.Directives]();
     for (let dir of Directives) {
         let { selector } = dir as any;
         let [k, v] = resolveSelector(selector);
         if (k == tagName && v == null) {
             TView[TViewIndex.Children].push(index);
-            component = dir;
-            TNode['TView'] = new TemplateView(component, TNode, native, TView);
+            TNode.component = dir;
+            TNode['TView'] = new TemplateView(
+                TNode.component,
+                TNode,
+                native,
+                TView
+            );
         } else {
             if (
                 (k == 'class' && Object.keys(classes).join(' ') == v) ||
@@ -340,20 +372,33 @@ function resolveDirective(tagName: string, index: number) {
         }
     }
 }
-function linkParentChild(el: Element | Text | Comment, index: number) {
-    let TView = currentTView(),
-        rootEleemnts = TView[TViewIndex.RootElements],
-        { nodeType } = el;
+function progressContext(index: number) {
+    const TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        { nodeType } = LView[index + offset];
+    let rootElements = TView[TViewIndex.RootElements];
     if (elementStack.length > 0) {
-        let parent = elementStack[elementStack.length - 1] as Element;
-        parent.append(el);
+        let parentIndex = elementStack[elementStack.length - 1];
+        linkParentChild(parentIndex, index);
     } else {
         if (nodeType == elementType.Text) {
-            rootEleemnts.push(el);
+            rootElements.push(index);
         }
     }
     if (nodeType == elementType.Element) {
-        elementStack.push(el);
+        elementStack.push(index);
+    }
+}
+//收集父子的index，在slot阶段使用
+function linkParentChild(parentIndex: number, index: number) {
+    const TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        parentTNode = TView[parentIndex + offset],
+        currentTNode = TView[index + offset];
+    parentTNode.children.push(index);
+    currentTNode.parent = parentIndex;
+    if (!parentTNode.component) {
+        LView[parentIndex + offset].append(LView[index + offset]);
     }
 }
 function bootstrapView(rootComponent: { new (): any }) {

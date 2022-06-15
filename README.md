@@ -7,7 +7,7 @@
 - [x] 父子传值
 - [ ] 生命周期
 - [ ] 更多的指令[for, if,...]
-- [ ] slot
+- [x] slot
 - [ ] 路由
 - [ ] web components支持
 - [ ] ...
@@ -65,5 +65,18 @@
 1.区分原生事件和自定义事件 [修饰符<vue>,]
 2.不区分事件类型,通过配置确定事件的传播范围[√]。
 	装饰器记录emit的key值，在实例化组件时，获取key值，生成自定义事件及所绑定的dom,在emit时触发dispatch事件
+```
+
+## slot
+
+```html
+'父组件':
+<app-component>
+	<span slot="first-slot"></span>
+</app-component>
+'子组件':
+<slot name = 'first-slot'></slot>
+
+1.组件记录子节点在父视图上的索引[TViewIndex.Slots],在slot节点渲染时，在父视图的slot中查找name匹配的节点
 ```
 

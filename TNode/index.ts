@@ -8,16 +8,20 @@ import { TemplateView } from '../TView/TemplateView';
 class elementNode {
     type: number = elementType.Element;
     tagName: string;
+    index: number;
     native?: Element;
-    directives: Function[] = new Array();
-    component: Function[] = new Array();
     attributes = new Array();
+    directives: Function[] = [];
+    component?: Function;
+    children: number[] = [];
+    parent: number = -1;
     TView?: TemplateView;
     finAttributes: {
         [propName: string]: any;
     };
     constructor(
         tagName: string,
+        index: number,
         dynamicStyle: string[][],
         dynamicClasses: string[][],
         attributes: Object = {},
@@ -25,6 +29,7 @@ class elementNode {
         dynamicAttributes: { [propName: string]: string[] } = {}
     ) {
         this.tagName = tagName;
+        this.index = index;
         this.attributes[AttributeType.dynamicStyle] = dynamicStyle.map(
             (fnConfig) => new Function(...fnConfig)
         );
@@ -45,15 +50,21 @@ class elementNode {
 class textNode {
     type: number = elementType.Text;
     content: string;
-    constructor(content: string) {
+    native: Text;
+    parent: number = -1;
+    constructor(content: string, native: Text) {
         this.content = content;
+        this.native = native;
     }
 }
 class commentNode {
     type: number = elementType.Comment;
     content: string;
-    constructor(content: string) {
+    native: Comment;
+    parent: number = -1;
+    constructor(content: string, native: Comment) {
         this.content = content;
+        this.native = native;
     }
 }
 export { elementNode, textNode, commentNode };

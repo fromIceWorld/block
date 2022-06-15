@@ -4,14 +4,19 @@ import { Input } from '../decorators/Input';
 import { Output } from '../decorators/Output';
 @Component({
     selector: `app-child`,
-    template: `app-child组件: {{ desc }}
+    template: ` app-child组件: {{ desc }}
         <div
-            style="width:100px;height:100px;background-color:red"
+            style="width: 67px;
+                    padding: 10px 15px;
+                    border-radius: 6px;
+                    background-color: #72d381"
             @click="emitValue()"
         >
             按钮
         </div>
-        <p>{{ parentValue }}</p>`,
+        <p>parentValue:{{ parentValue }}</p>
+        <slot name="slot1"></slot>
+        <slot></slot>`,
     styles: '',
 })
 class ChilComponent {

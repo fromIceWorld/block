@@ -122,12 +122,13 @@ class TemplateView extends Array {
             let tNode = this[child + offset];
             tNode['TView'].attach();
         }
+        let rootElements = this[TViewIndex.RootElements].map(
+            (index) => this[TViewIndex.LView][index + offset]
+        );
         if (!Array.isArray(this[TViewIndex.Host])) {
-            (this[TViewIndex.Host] as Element).append(
-                ...this[TViewIndex.RootElements]
-            );
+            (this[TViewIndex.Host] as Element).append(...rootElements);
         } else {
-            this[TViewIndex.Host] = [...this[TViewIndex.RootElements]];
+            this[TViewIndex.Host] = [...rootElements];
         }
         TViewFns.popContext();
     }
