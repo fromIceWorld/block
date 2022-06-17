@@ -1,5 +1,4 @@
 import { Component } from '../decorators/index';
-
 @Component({
     selector: `#root`,
     styles: ``,
@@ -43,5 +42,44 @@ class MyComponent {
     console(e: EventTarget) {
         console.log('接收到子组件的emit', e);
     }
+    OnInputChanges(changesObj) {
+        console.log(
+            '%cmyComponent: %cOnIputChanges',
+            'color:green',
+            'color:#ff6500'
+            changesObj,
+
+        );
+    }
+    OnInit() {
+        console.log('%cmyComponent: %cOnIinit', 'color:green', 'color:blue');
+    }
+    OnSlotInit() {
+        console.log('%cmyComponent: %cOnSlotInit', 'color:green', 'color:blue');
+    }
+    OnSlotChecked() {
+        console.log(
+            '%cmyComponent: %cOnSlotChecked',
+            'color:green',
+            'color:#ff6500'
+        );
+    }
+    OnViewInit() {
+        console.log('%cmyComponent: %cOnViewInit', 'color:green', 'color:blue');
+    }
+    OnViewChecked() {
+        console.log(
+            '%cmyComponent: %cOnViewChecked',
+            'color:green',
+            'color:#ff6500'
+        );
+    }
+    OnDestroy() {
+        console.log(
+            '%cmyComponent: %cOnDestroy','color:green',
+            'color:red'
+        );
+    }
 }
 export { MyComponent };
+

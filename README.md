@@ -5,7 +5,8 @@
 - [x] 数据与view绑定更新。
 - [ ] 更好的分层, 代码逻辑,依赖注入
 - [x] 父子传值
-- [ ] 生命周期
+- [x] 组件生命周期
+- [ ] 指令生命周期
 - [ ] 更多的指令[for, if,...]
 - [x] slot
 - [ ] 路由
@@ -78,5 +79,41 @@
 <slot name = 'first-slot'></slot>
 
 1.组件记录子节点在父视图上的索引[TViewIndex.Slots],在slot节点渲染时，在父视图的slot中查找name匹配的节点
+```
+
+## 生命周期
+
+### component
+
+```typescript
+生命周期依据指令集函数分离`create`, `update`,
+------------------------------------------
+OnInit: 当前view初始化
+OnSlotInit: 插槽内容初始化
+OnViewInit: 子view初始化
+OnInputChanges: 输入属性更改[第一次更改后的更改]
+OnSlotChecked: 插槽内容检查更新后
+OnViewChecked: 子view检查更新后
+
+OnDestroy: view被销毁时
+
+`create`: OnInit, OnSlotInit, OnViewInit
+`update`: OnInputChanges, OnSlotChecked, OnViewChecked
+
+`destroy`: OnDestroy
+```
+
+### directive
+
+```typescript
+功能：
+1.更改属性 
+2.拓展模板 for，if
+
+`OnInit`: 初始化
+`OnInsert`: 插入parent后
+`OnInputChanges`: input属性更改
+`OnDestroy`: 指令的host销毁
+
 ```
 

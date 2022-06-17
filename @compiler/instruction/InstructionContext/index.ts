@@ -50,6 +50,7 @@ function elementStart(tagName: string, index: number) {
     let tNode = resolveNode(tagName, index);
     createNative(tNode, index);
     resolveDirective(tagName, index);
+    HookDirective('OnInit', tNode.directives);
     // 添加静态属性
     addStaticAttributes(
         tNode.native!,
@@ -353,25 +354,32 @@ function resolveDirective(tagName: string, index: number) {
     for (let dir of Directives) {
         let { selector } = dir as any;
         let [k, v] = resolveSelector(selector);
-        if (k == tagName && v == null) {
-            TView[TViewIndex.Children].push(index);
-            TNode.component = dir;
-            TNode['TView'] = new TemplateView(
-                TNode.component,
-                TNode,
-                native,
-                TView
-            );
+        if (v == null) {
+            if (k == tagName) {
+                TView[TViewIndex.Children].push(index);
+                TNode.component = dir;
+                TNode['TView'] = new TemplateView(
+                    TNode.component,
+                    TNode,
+                    native,
+                    TView
+                );
+            }
         } else {
             if (
                 (k == 'class' && Object.keys(classes).join(' ') == v) ||
                 attributes[AttributeType.staticAttribute][k] == v
             ) {
-                directives.push(dir);
+                directives.push(new dir());
             }
         }
     }
 }
+/**
+ * 处理节点之间的关系
+ *
+ * @param index 节点索引
+ */
 function progressContext(index: number) {
     const TView = currentTView(),
         LView = TView[TViewIndex.LView],
@@ -389,7 +397,7 @@ function progressContext(index: number) {
         elementStack.push(index);
     }
 }
-//收集父子的index，在slot阶段使用
+//收集父子的index，在slot阶段, 指令生命周期阶段使用
 function linkParentChild(parentIndex: number, index: number) {
     const TView = currentTView(),
         LView = TView[TViewIndex.LView],
@@ -406,6 +414,13 @@ function bootstrapView(rootComponent: { new (): any }) {
     rootTView.attach();
     console.log(instructionIFrameStates, rootTView);
     return rootTView;
+}
+function HookDirective(lifeCycle: string, directives: any[]) {
+    directives.forEach((dir) => {
+        if (dir[lifeCycle]) {
+            dir[lifeCycle]();
+        }
+    });
 }
 const TViewFns = {
     elementStart,

@@ -4,12 +4,25 @@ import { TNode } from '../@compiler/instruction/instructionFn/interface/TNode';
 import { EventEmitter } from '../common/event/EventEmitter';
 import { InputPlace } from '../decorators/Input';
 import { EventPlace } from '../decorators/Output';
+import { θd } from '../DocumentAPI/browser';
 import { TViewIndex } from '../Enums/index';
 import { StaticInjector } from '../Injector/index';
 import { componentFromModule } from '../platform/application';
 import { LogicView } from './LogicView';
 const offset = 20;
 
+interface Changes {
+    [key: string]: {
+        inputKey: string;
+        previousValue: any;
+        firstChange: boolean;
+        currentValue: any;
+        valueChange: boolean;
+    };
+}
+interface objInterface {
+    [key: string]: any;
+}
 /**
  * 组件的模板视图，用以存储组件的元数据。
  *
@@ -18,19 +31,19 @@ const offset = 20;
  * @param parent 组件的父级级 TView
  */
 class TemplateView extends Array {
-    [TViewIndex.Host]: Element | Array<Element>;
+    [TViewIndex.Host]?: Element;
     [TViewIndex.RootElements] = new Array();
     [TViewIndex.LView]: LogicView;
     [TViewIndex.Parent]?: TemplateView;
     [TViewIndex.Children] = new Array();
     [TViewIndex.Class]?: Function;
-    [TViewIndex.Context] = {};
-    [TViewIndex.ComponentDef]: {
+    [TViewIndex.Context]: objInterface = {};
+    [TViewIndex.ComponentDef]?: {
         template: Function;
         attributes: Array<string | number>;
     };
-    [TViewIndex.Slots]: Object;
-    [TViewIndex.Injector]: StaticInjector;
+    [TViewIndex.Slots]?: Object;
+    [TViewIndex.Injector]?: StaticInjector;
     [TViewIndex.Module]: any;
     [TViewIndex.Directives] = () => {
         return this[TViewIndex.Module]
@@ -40,7 +53,7 @@ class TemplateView extends Array {
     constructor(
         component: { new (): any },
         tNode?: TNode,
-        host: Element | Array<Element> = [],
+        host: Element = θd.createElement('template'),
         parent?: TemplateView
     ) {
         super();
@@ -57,21 +70,34 @@ class TemplateView extends Array {
         this.handleOutput();
         this.createInjector();
     }
-    // 处理 inout属性
-    handleInput() {
+    /**
+     * 处理 input属性, 建立__proto__
+     * @param firstChange 是否是第一次处理输入属性
+     */
+    updateInput(firstChange: boolean) {
         let tNode = this[TViewIndex.TNode],
             { finAttributes } = tNode,
             inputValueskey =
-                this[TViewIndex.Class]!.prototype[InputPlace] || [],
-            inputObj = Object.create({});
-        for (let obj of inputValueskey) {
-            let { localKey, inputKey } = obj;
-            inputObj[localKey] = finAttributes[inputKey];
+                this[TViewIndex.Class]!.prototype[InputPlace] || {},
+            context = firstChange
+                ? Object.create(this[TViewIndex.Context])
+                : this[TViewIndex.Context];
+        for (let [localKey, localObj] of Object.entries(inputValueskey) as [
+            string,
+            any
+        ]) {
+            let value = finAttributes[localObj.inputKey];
+            if (localObj['currentValue'] !== value) {
+                localObj['previousValue'] = localObj['currentValue'];
+                localObj['currentValue'] = value;
+                localObj['valueChange'] = true;
+                context[localKey] = value;
+            }
+            localObj['firstChange'] = firstChange;
         }
-        this[TViewIndex.Context] = Object.assign(
-            this[TViewIndex.Context],
-            inputObj
-        );
+        if (firstChange) {
+            this[TViewIndex.Context] = context;
+        }
     }
     // 处理output事件
     handleOutput() {
@@ -92,11 +118,11 @@ class TemplateView extends Array {
             outputEventObj
         );
     }
-    $getDefinition = (() => {
+    $getDefinition: any = (() => {
         return () => {
             if (!this[TViewIndex.ComponentDef]) {
                 const compilerInstance =
-                    this[TViewIndex.Injector].get(compiler);
+                    this[TViewIndex.Injector]!.get(compiler);
                 console.log(compilerInstance);
                 this[TViewIndex.ComponentDef] = compilerInstance.transform(
                     this[TViewIndex.Class]
@@ -106,42 +132,55 @@ class TemplateView extends Array {
         };
     })();
     // 当前组件的依赖系统
-    createInjector() {
+    createInjector(): void {
         let providers =
             Object.getOwnPropertyDescriptor(this[TViewIndex.Class], 'providers')
                 ?.value || [];
         this[TViewIndex.Injector] = new StaticInjector(providers);
     }
-    attach() {
-        this.handleInput();
+    attach(): void {
+        this.updateInput(true);
         TViewFns.pushContext(this);
+        // this.Hook('OnIputChanges', this[TViewIndex.Context][InputPlace]);
+        this.Hook('OnInit');
         let def = this.$getDefinition(),
             children = this[TViewIndex.Children];
         def.template(3, this[TViewIndex.Context]);
+        this.Hook('OnSlotInit');
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].attach();
         }
+        this.Hook('OnViewInit');
         let rootElements = this[TViewIndex.RootElements].map(
             (index) => this[TViewIndex.LView][index + offset]
         );
-        if (!Array.isArray(this[TViewIndex.Host])) {
-            (this[TViewIndex.Host] as Element).append(...rootElements);
+        if ((this[TViewIndex.Host] as any).content) {
+            (this[TViewIndex.Host] as any).content.append(...rootElements);
         } else {
-            this[TViewIndex.Host] = [...rootElements];
+            this[TViewIndex.Host]!.append(...rootElements);
         }
         TViewFns.popContext();
     }
-    detectChanges() {
-        this.handleInput();
+    detectChanges(): void {
+        this.updateInput(false);
+        this.Hook('OnInputChanges', this[TViewIndex.Context][InputPlace]);
         TViewFns.pushContext(this);
         let def = this.$getDefinition();
         def && def.template(2, this[TViewIndex.Context]);
+        this.Hook('OnSlotChecked');
         for (let child of this[TViewIndex.Children]) {
             let tNode = this[child + offset];
             tNode['TView'].detectChanges();
         }
+        this.Hook('OnViewChecked');
         TViewFns.popContext();
+    }
+    Hook(lifeCycle: string, param?: any) {
+        let context = this[TViewIndex.Context];
+        if (context[lifeCycle]) {
+            context[lifeCycle](param);
+        }
     }
 }
 

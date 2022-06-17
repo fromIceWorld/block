@@ -11,7 +11,7 @@ class elementNode {
     index: number;
     native?: Element;
     attributes = new Array();
-    directives: Function[] = [];
+    directives: Object[] = [];
     component?: Function;
     children: number[] = [];
     parent: number = -1;

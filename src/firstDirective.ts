@@ -1,20 +1,37 @@
 class firstDirective {
     name = '第一个指令';
     static selector = '[data-angular]';
-    init() {
-        console.log('init');
+    OnInit() {
+        console.log(
+            '%cfirstDirective: %c指令初始化',
+            'color: #2c5dc1',
+            'color: blue'
+        );
     }
-    insert(parent: Element, current: Element) {
-        console.log('insert', parent, current);
+    OnInsert(parent: Element, current: Element) {
+        console.log(
+            '%cfirstDirective: %chost插入parent后',
+            parent,
+            current,
+            'color: #2c5dc1',
+            'color: blue'
+        );
     }
-    beforePropertyUpdate() {
-        console.log('beforePropertyUpdate');
+    OnInputChanges(changesObj) {
+        console.log(
+            '%cfirstDirective: %cOnIputChanges',
+            'color:#2c5dc1',
+            'color:#ff6500'
+            changesObj,
+
+        );
     }
-    afterPropertyUpdate() {
-        console.log('afterPropertyUpdate');
-    }
-    afterHostUpdate() {
-        console.log('afterHostUpdate');
+    OnDestroy() {
+        console.log(
+            '%cmyComponent: %cOnDestroy','color:green',
+            'color:red'
+        );
     }
 }
 export { firstDirective };
+
