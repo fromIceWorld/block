@@ -8,6 +8,7 @@ enum TViewIndex {
     Context,
     Document,
     Directives,
+    InRange,
     ComponentDef,
     Slots,
     Injector,

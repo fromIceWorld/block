@@ -1,7 +1,7 @@
+import { ObjectInterface } from '../common/interface';
 import { AttributeType } from '../Enums/attributeType';
 import { elementType } from '../Enums/index';
 import { TemplateView } from '../TView/TemplateView';
-
 /**
  * @public finAttributes 静态属性与动态属性合并后的最终attributes
  */
@@ -11,14 +11,12 @@ class elementNode {
     index: number;
     native?: Element;
     attributes = new Array();
-    directives: Object[] = [];
+    directives: ObjectInterface<any>[] = [];
     component?: Function;
     children: number[] = [];
     parent: number = -1;
     TView?: TemplateView;
-    finAttributes: {
-        [propName: string]: any;
-    };
+    finAttributes: ObjectInterface<any>;
     constructor(
         tagName: string,
         index: number,
@@ -26,7 +24,7 @@ class elementNode {
         dynamicClasses: string[][],
         attributes: Object = {},
         events: Object = {},
-        dynamicAttributes: { [propName: string]: string[] } = {}
+        dynamicAttributes: ObjectInterface<any> = {}
     ) {
         this.tagName = tagName;
         this.index = index;

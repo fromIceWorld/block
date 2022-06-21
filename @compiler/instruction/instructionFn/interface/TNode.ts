@@ -20,5 +20,6 @@ interface TextTNode {
     startPosition: Position;
     endPosition: Position;
 }
-type TNode = CommentTNode | ElementTNode | TextTNode;
+type AllTNode = CommentTNode | ElementTNode | TextTNode;
+type TNode = ElementTNode | TextTNode;
 export { CommentTNode, ElementTNode, TextTNode, TNode };

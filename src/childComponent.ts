@@ -24,8 +24,12 @@ class ChilComponent {
     @Output('childEmit')
     emitBuild?: EventEmitter<any>;
     desc = '[child组件中的插值]';
-    constructor() {
+    constructor() {}
+    OnInit() {
         console.log(this, this.emitBuild);
+    }
+    OnInputChanges(e) {
+        console.log(e);
     }
     emitValue() {
         this.emitBuild?.emit('child');

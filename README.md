@@ -108,12 +108,12 @@ OnDestroy: view被销毁时
 ```typescript
 功能：
 1.更改属性 
-2.拓展模板 for，if
+2.拓展模板 for，if,同组件迁移模板
 
+`OnInserted`: host插入到parent后
+`OnInputChanges`: 输入属性更改时
 `OnInit`: 初始化
-`OnInsert`: 插入parent后
-`OnInputChanges`: input属性更改
-`OnDestroy`: 指令的host销毁
+`OnDestroy`: host属性更改引起的指令销毁
 
 ```
 

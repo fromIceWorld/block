@@ -42,13 +42,12 @@ class MyComponent {
     console(e: EventTarget) {
         console.log('接收到子组件的emit', e);
     }
-    OnInputChanges(changesObj) {
+    OnInputChanges(changesObj: any) {
         console.log(
             '%cmyComponent: %cOnIputChanges',
             'color:green',
-            'color:#ff6500'
-            changesObj,
-
+            'color:#ff6500',
+            changesObj
         );
     }
     OnInit() {
@@ -75,11 +74,7 @@ class MyComponent {
         );
     }
     OnDestroy() {
-        console.log(
-            '%cmyComponent: %cOnDestroy','color:green',
-            'color:red'
-        );
+        console.log('%cmyComponent: %cOnDestroy', 'color:green', 'color:red');
     }
 }
 export { MyComponent };
-

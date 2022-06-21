@@ -1,4 +1,6 @@
 import { resolveSelector } from '../../../common/index';
+import { ObjectInterface } from '../../../common/interface';
+import { createDirectivesContext } from '../../../decorators/Input';
 import { θd } from '../../../DocumentAPI/index';
 import { AttributeType, elementType, TViewIndex } from '../../../Enums/index';
 import { commentNode, elementNode, textNode } from '../../../TNode/index';
@@ -6,12 +8,6 @@ import { TemplateView } from '../../../TView/TemplateView';
 
 interface Attributes {
     [key: string]: Function;
-}
-interface finAttributes {
-    [key: string]: any;
-}
-interface keyValue {
-    [key: string]: any;
 }
 const offset = 20;
 /**
@@ -50,7 +46,7 @@ function elementStart(tagName: string, index: number) {
     let tNode = resolveNode(tagName, index);
     createNative(tNode, index);
     resolveDirective(tagName, index);
-    HookDirective('OnInit', tNode.directives);
+    // HookDirective('OnInit', tNode.directives);
     // 添加静态属性
     addStaticAttributes(
         tNode.native!,
@@ -80,7 +76,10 @@ function createNative(tNode: elementNode, index: number) {
     tNode.native = dom;
     LView[offset + index] = dom;
 }
-function addStaticAttributes(dom: Element, attributes: keyValue = {}) {
+function addStaticAttributes(
+    dom: Element,
+    attributes: ObjectInterface<string> = {}
+) {
     Object.keys(attributes).forEach((key) => {
         dom.setAttribute(key, attributes[key]);
     });
@@ -139,7 +138,7 @@ function updateProperty(index: number) {
 function updateProp(
     index: number,
     attributes: Attributes,
-    finAttributes: finAttributes
+    finAttributes: ObjectInterface<any>
 ) {
     let TView = currentTView(),
         LView = currentLView(),
@@ -159,7 +158,7 @@ function updateProp(
 function updateClass(
     index: number,
     classes: Function[],
-    finAttributes: finAttributes
+    finAttributes: ObjectInterface<any>
 ) {
     let TView = currentTView(),
         LView = currentLView(),
@@ -196,7 +195,7 @@ function updateClass(
 function updateStyle(
     index: number,
     fns: Function[],
-    finAttributes: finAttributes
+    finAttributes: ObjectInterface<any>
 ) {
     let TView = currentTView(),
         LView = currentLView(),
@@ -350,8 +349,8 @@ function resolveDirective(tagName: string, index: number) {
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index];
     let { classes, attributes, directives } = TNode;
-    const Directives = TView[TViewIndex.Directives]();
-    for (let dir of Directives) {
+    const InRanges = TView[TViewIndex.InRange]();
+    for (let dir of InRanges) {
         let { selector } = dir as any;
         let [k, v] = resolveSelector(selector);
         if (v == null) {
@@ -370,7 +369,10 @@ function resolveDirective(tagName: string, index: number) {
                 (k == 'class' && Object.keys(classes).join(' ') == v) ||
                 attributes[AttributeType.staticAttribute][k] == v
             ) {
-                directives.push(new dir());
+                TView[TViewIndex.Directives].add(index);
+                let context = createDirectivesContext(dir, TNode);
+                // Hook(context, 'OnInputChanges', context[InputCache]);
+                directives.push(context);
             }
         }
     }
@@ -384,30 +386,44 @@ function progressContext(index: number) {
     const TView = currentTView(),
         LView = TView[TViewIndex.LView],
         { nodeType } = LView[index + offset];
+    let parentIndex;
     let rootElements = TView[TViewIndex.RootElements];
-    if (elementStack.length > 0) {
-        let parentIndex = elementStack[elementStack.length - 1];
-        linkParentChild(parentIndex, index);
-    } else {
+    if (elementStack.length == 0) {
+        parentIndex = -1; //当前无父节点
         if (nodeType == elementType.Text) {
             rootElements.push(index);
         }
+    } else {
+        parentIndex = elementStack[elementStack.length - 1];
     }
     if (nodeType == elementType.Element) {
         elementStack.push(index);
     }
+    linkParentChild(parentIndex, index);
 }
 //收集父子的index，在slot阶段, 指令生命周期阶段使用
 function linkParentChild(parentIndex: number, index: number) {
     const TView = currentTView(),
-        LView = TView[TViewIndex.LView],
-        parentTNode = TView[parentIndex + offset],
-        currentTNode = TView[index + offset];
-    parentTNode.children.push(index);
-    currentTNode.parent = parentIndex;
-    if (!parentTNode.component) {
-        LView[parentIndex + offset].append(LView[index + offset]);
+        LView = TView[TViewIndex.LView];
+    let parentTNode,
+        parentNative,
+        currentTNode = TView[index + offset],
+        { directives = [], native } = currentTNode;
+    if (parentIndex == -1) {
+        parentNative = TView[TViewIndex.Host];
+    } else {
+        parentTNode = TView[parentIndex + offset];
+        parentNative = LView[parentIndex + offset];
+        parentTNode.children.push(index);
+        currentTNode.parent = parentIndex;
     }
+    if (!parentTNode || !parentTNode.component) {
+        parentNative.append(LView[index + offset]);
+    }
+    // 调用指令生命周期:[insert]
+    // for (let context of directives) {
+    //     Hook(context, 'OnInsert', parentNative, native);
+    // }
 }
 function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
@@ -415,10 +431,15 @@ function bootstrapView(rootComponent: { new (): any }) {
     console.log(instructionIFrameStates, rootTView);
     return rootTView;
 }
-function HookDirective(lifeCycle: string, directives: any[]) {
+
+function HookDirective(
+    lifeCycle: string,
+    directives: any[] = [],
+    ...params: any[]
+) {
     directives.forEach((dir) => {
         if (dir[lifeCycle]) {
-            dir[lifeCycle]();
+            dir[lifeCycle](...params);
         }
     });
 }
