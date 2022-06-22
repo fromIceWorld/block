@@ -1,6 +1,6 @@
-import { ObjectInterface } from '../common/interface';
-import { AttributeType } from '../Enums/attributeType';
-import { elementType } from '../Enums/index';
+import { ObjectInterface } from '../../../common/interface';
+import { AttributeType } from '../../Enums/attributeType';
+import { elementType } from '../../Enums/index';
 import { TemplateView } from '../TView/TemplateView';
 /**
  * @public finAttributes 静态属性与动态属性合并后的最终attributes

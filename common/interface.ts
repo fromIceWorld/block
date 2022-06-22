@@ -1,6 +1,9 @@
 interface ObjectInterface<V> {
     [key: string]: V;
+    [key: symbol]: V;
 }
-
-type ObjectConstructor = { new (): any; [key: string]: any };
-export { ObjectInterface, ObjectConstructor };
+interface ConstructortInterface {
+    new (): any;
+    [key: string]: any;
+}
+export { ObjectInterface, ConstructortInterface };

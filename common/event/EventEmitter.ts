@@ -1,12 +1,12 @@
-let defaultConfig: CustomEventInit<any> = {
+let defaultConfig: CustomEventInit = {
     bubbles: false,
     cancelable: true,
     composed: true,
     detail: {},
 };
-class EventEmitter<T> {
-    event: CustomEvent<T>;
-    constructor(type: string, additionConfig: CustomEventInit<T> = {}) {
+class EventEmitter {
+    event: CustomEvent;
+    constructor(type: string, additionConfig: CustomEventInit = {}) {
         this.event = new CustomEvent(
             type,
             Object.assign(defaultConfig, additionConfig)

@@ -1,11 +1,11 @@
 import { bootstrapView } from '../@compiler/instruction/InstructionContext/index';
+import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import {
     currentInjector,
     Injector,
     StaticInjector,
     StaticProvider,
 } from '../Injector/index';
-import { TemplateView } from '../TView/TemplateView';
 
 const componentFromModule = '$$_Bind_Module',
     moduleCore: string = '$$_Module_Core';

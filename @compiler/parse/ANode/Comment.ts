@@ -1,6 +1,6 @@
-import { elementType } from '../Enum/index';
+import { elementType } from '../../Enums/index';
 import { Position } from '../position/index';
-class CommentTNode {
+class CommentANode {
     content: string;
     type = elementType.Comment;
     startPosition: Position;
@@ -15,4 +15,4 @@ class CommentTNode {
         this.endPosition = endPosition;
     }
 }
-export { CommentTNode };
+export { CommentANode };

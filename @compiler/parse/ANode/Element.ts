@@ -1,14 +1,14 @@
-import { elementType } from '../Enum/index';
+import { elementType } from '../../Enums/index';
 import { Position } from '../position/index';
 
 /**
  * @param tagName 标签名称
  */
-class ElementTNode {
+class ElementANode {
     tagName: string;
     attributes: Array<string> = new Array();
     closed: boolean;
-    children: Array<ElementTNode> = new Array();
+    children: Array<ElementANode> = new Array();
     type: number = elementType.Element;
     startPosition: Position;
     constructor(
@@ -23,4 +23,4 @@ class ElementTNode {
         this.startPosition = startPosition;
     }
 }
-export { ElementTNode };
+export { ElementANode };

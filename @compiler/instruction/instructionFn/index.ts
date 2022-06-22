@@ -1,5 +1,4 @@
-import { elementType } from './Enums/ElementType';
-import { AttributeType } from './Enums/index';
+import { AttributeType, elementType } from '../../Enums/index';
 import {
     CommentTNode,
     ElementTNode,

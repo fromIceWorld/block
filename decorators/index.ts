@@ -1,3 +1,3 @@
-export * from './Component';
+export * from './class/index';
 export * from './Enum';
-export * from './Module';
+export * from './prop/index';

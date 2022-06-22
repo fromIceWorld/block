@@ -1,7 +1,7 @@
 enum elementType {
     Element = 1,
     Attr,
-    Text = 3,
+    Text,
     CDATASection,
     Comment = 8,
 }

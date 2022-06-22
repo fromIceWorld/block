@@ -1,10 +1,10 @@
 import { resolveSelector } from '../../../common/index';
 import { ObjectInterface } from '../../../common/interface';
-import { createDirectivesContext } from '../../../decorators/Input';
 import { θd } from '../../../DocumentAPI/index';
-import { AttributeType, elementType, TViewIndex } from '../../../Enums/index';
-import { commentNode, elementNode, textNode } from '../../../TNode/index';
-import { TemplateView } from '../../../TView/TemplateView';
+import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
+import { TemplateDirective } from '../../template/TDirective/index';
+import { commentNode, elementNode, textNode } from '../../template/TNode/index';
+import { TemplateView } from '../../template/TView/TemplateView';
 
 interface Attributes {
     [key: string]: Function;
@@ -302,8 +302,8 @@ function resolveNode(tagName: string, index: number) {
  */
 function resolveAttributes(index: number) {
     const { attributes } = currentTView()[TViewIndex.ComponentDef] as any;
-    let dynamicStyle = [],
-        dynamicClasses = [],
+    let dynamicStyle = new Array(),
+        dynamicClasses = new Array(),
         mergeAttributes = Object.create({}),
         events = Object.create({}),
         dynamicAttributes = Object.create({});
@@ -370,8 +370,9 @@ function resolveDirective(tagName: string, index: number) {
                 attributes[AttributeType.staticAttribute][k] == v
             ) {
                 TView[TViewIndex.Directives].add(index);
-                let context = createDirectivesContext(dir, TNode);
-                // Hook(context, 'OnInputChanges', context[InputCache]);
+                // let context = createDirectivesContext(dir, TNode);
+                let context = new TemplateDirective(TNode, TView, dir);
+                // Hook(context, 'OnInputChanges', context[InputChanges]);
                 directives.push(context);
             }
         }

@@ -1,4 +1,4 @@
-import { Decorator } from './Enum';
+import { Decorator } from '../Enum';
 interface ComponentParams {
     selector: string;
     styles: string;
