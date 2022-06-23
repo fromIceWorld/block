@@ -1,18 +1,12 @@
 import { compiler } from '../../compile/index';
 
-import {
-    ConstructortInterface,
-    ObjectInterface,
-} from '../../../common/interface';
-import { InjectChanges } from '../../../decorators/index';
-import { InputChanges } from '../../../decorators/prop/Input';
-import { EventChanges } from '../../../decorators/prop/Output';
+import { ConstructortInterface } from '../../../common/interface';
 import { θd } from '../../../DocumentAPI/browser';
 import { Hook } from '../../../lifeCycle/index';
 import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/index';
 import { TViewFns } from '../../instruction/InstructionContext/index';
-import { offset, TemplateDynamic } from '../template';
+import { offset, TemplateDynamic, ViewMode } from '../template';
 import { elementNode } from '../TNode/index';
 import { LogicView } from './LogicView';
 
@@ -41,13 +35,8 @@ class TemplateView extends TemplateDynamic {
             ? (component as any)[componentFromModule]
             : null;
         this.injectProviders();
-        this[TViewIndex.Context] = this.createContext();
-        this.updateInput();
-        this.createOutput();
-        this.InstanceInjects();
-        this.mergeContextAndDecorators();
+        this[TViewIndex.Context] = this.initContext();
     }
-
     private $getDefinition: any = (() => {
         return () => {
             if (!this[TViewIndex.ComponentDef]) {
@@ -63,14 +52,21 @@ class TemplateView extends TemplateDynamic {
     })();
     attach(): void {
         TViewFns.pushContext(this);
+        this.createContext();
         Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
-        def.template(3, this[TViewIndex.Context]);
+        def.template(ViewMode.create, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnSlotInit');
-        this.HookDirectives('OnInserted');
-        this.HookDirectives('OnInputChanges');
-        this.HookDirectives('OnInit');
+        // 指令
+        const nodeHasDirectiveIndex = this[TViewIndex.Directives];
+        for (let index of nodeHasDirectiveIndex) {
+            let tNode = this[index + offset];
+            for (let dir of tNode.directives) {
+                console.log(dir);
+                dir.attach();
+            }
+        }
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].attach();
@@ -79,24 +75,16 @@ class TemplateView extends TemplateDynamic {
         let rootElements = this[TViewIndex.RootElements].map(
             (index) => this[TViewIndex.LView]![index + offset]
         );
-        if ((this[TViewIndex.Host] as any).content) {
-            (this[TViewIndex.Host] as any).content.append(...rootElements);
-        } else {
-            this[TViewIndex.Host]!.append(...rootElements);
-        }
+        this[TViewIndex.Host]!.append(...rootElements);
         TViewFns.popContext();
     }
-    // 变更检测
     detectChanges(): void {
-        this.updateInput();
         TViewFns.pushContext(this);
+        this.updateInput();
         let def = this.$getDefinition(),
             children = this[TViewIndex.Children];
-        def && def.template(2, this[TViewIndex.Context]);
+        def && def.template(ViewMode.update, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnSlotChecked');
-        // 指令的 [OnInputChanges]生命周期
-        // attach阶段，触发指令 change生命周期
-        this.HookDirectives('OnInputChanges');
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].detectChanges();
@@ -106,19 +94,4 @@ class TemplateView extends TemplateDynamic {
     }
 }
 
-/**
- * 在context和 class之间建立一层中间层，存储input，output，inject数据
- *
- *
- * @param constructor 组件/指令的class
- * @param key
- */
-function insertMiddleLayer(constructor: ObjectInterface<any>) {
-    let upper = constructor.prototype,
-        middle = Object.create(upper);
-    middle[InputChanges] = Object.create({});
-    middle[EventChanges] = Object.create({});
-    middle[InjectChanges] = Object.create({});
-    return middle;
-}
 export { TemplateView };

@@ -10,6 +10,10 @@ import { elementNode } from './TNode/index';
 import { LogicView } from './TView/LogicView';
 import { TemplateView } from './TView/TemplateView';
 
+enum ViewMode {
+    create = 1,
+    update,
+}
 const offset = 20;
 
 class TemplateDynamic extends Array {
@@ -108,16 +112,6 @@ class TemplateDynamic extends Array {
             };
         }
     }
-    HookDirectives(hooks: string) {
-        let nodeHasDirectives = this[TViewIndex.Directives];
-        for (let nodeIndex of nodeHasDirectives) {
-            let tNode = this[nodeIndex + offset],
-                { directives, native } = tNode;
-            for (let dirContext of directives) {
-                Hook(dirContext, hooks, native, dirContext[InputChanges]);
-            }
-        }
-    }
     // 将context 与@Input，@Output，@Inject合并
     mergeContextAndDecorators() {
         let middleLayer = this[TViewIndex.Context],
@@ -129,7 +123,7 @@ class TemplateDynamic extends Array {
             )) {
                 Object.defineProperty(context, key, {
                     get() {
-                        return value.currentValue;
+                        return middleLayer[cache][key].currentValue;
                     },
                     set(v) {
                         throw Error(
@@ -142,12 +136,21 @@ class TemplateDynamic extends Array {
         this[TViewIndex.Context] = context;
     }
     /**
-     * 创建组件的上下文，建立一个中间层
+     * 初始化组件的上下文，建立一个中间层
      */
-    createContext() {
+    initContext() {
         let tNode = this[TViewIndex.TNode],
             dir = this[TViewIndex.Class];
         return !tNode ? new dir!() : insertMiddleLayer(dir!);
+    }
+    /**
+     * 合并初始化的context，@Input，@Output，@Inject。
+     */
+    createContext() {
+        this.updateInput();
+        this.createOutput();
+        this.InstanceInjects();
+        this.mergeContextAndDecorators();
     }
 }
 /**
@@ -165,4 +168,4 @@ function insertMiddleLayer(constructor: ObjectInterface<any>) {
     middle[InjectChanges] = Object.create({});
     return middle;
 }
-export { TemplateDynamic, offset };
+export { TemplateDynamic, offset, ViewMode };

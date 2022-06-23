@@ -3,15 +3,16 @@
 ## 进度
 
 - [x] 数据与view绑定更新。
-- [ ] 更好的分层, 代码逻辑,依赖注入
-- [x] 父子传值
+- [ ] 更好的分层, 代码逻辑, 生命周期, 依赖注入
+- [x] 父子传值  `@Input` `@Output`
 - [x] 组件生命周期
 - [x] 指令生命周期
-- [x] 依赖注入@inject
+- [x] 依赖注入  `@inject`
 - [ ] 更新逻辑
 - [ ] 更多的指令[for, if,...]
 - [x] slot
 - [ ] 路由
+- [ ] 服务端渲染
 - [ ] web components支持
 - [ ] ...
 
@@ -45,9 +46,9 @@
 用于隔离组件,指令,pipe等。
 ```
 
-## 父子传值
+## 组件传值
 
-### 父->子
+### @Input
 
 获取节点上的所有属性，但只接收特定的属性。
 
@@ -62,7 +63,7 @@
 
 ```
 
-### 子->父
+### @Output
 
 ```typescript
 1.区分原生事件和自定义事件 [修饰符<vue>,]
@@ -84,6 +85,21 @@
 ```
 
 ## 生命周期
+
+## view
+
+`广度优先`
+
+```typescript
+`渲染`: create + update
+`create`: attach
+`update`: detectChanges
+`destroy`: 
+------------------------------------
+`分离出检查树：detach`
+`重新添加到检查树：rettach`
+
+```
 
 ### component
 
@@ -112,7 +128,6 @@ OnDestroy: view被销毁时
 1.更改属性 
 2.拓展模板 for，if,同组件迁移模板
 
-`OnInserted`: host插入到parent后
 `OnInputChanges`: 输入属性更改时
 `OnInit`: 初始化
 `OnDestroy`: host属性更改引起的指令销毁

@@ -51,7 +51,7 @@ class MyComponent {
         );
     }
     OnInit() {
-        console.log('%cmyComponent: %cOnIinit', 'color:green', 'color:blue');
+        console.log('%cmyComponent: %cOnInit', 'color:green', 'color:blue');
     }
     OnSlotInit() {
         console.log('%cmyComponent: %cOnSlotInit', 'color:green', 'color:blue');

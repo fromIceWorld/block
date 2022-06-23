@@ -371,9 +371,9 @@ function resolveDirective(tagName: string, index: number) {
             ) {
                 TView[TViewIndex.Directives].add(index);
                 // let context = createDirectivesContext(dir, TNode);
-                let context = new TemplateDirective(TNode, TView, dir);
+                let dirInstance = new TemplateDirective(TNode, TView, dir);
                 // Hook(context, 'OnInputChanges', context[InputChanges]);
-                directives.push(context);
+                directives.push(dirInstance);
             }
         }
     }
@@ -429,20 +429,9 @@ function linkParentChild(parentIndex: number, index: number) {
 function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
     rootTView.attach();
+    rootTView.detectChanges();
     console.log(instructionIFrameStates, rootTView);
     return rootTView;
-}
-
-function HookDirective(
-    lifeCycle: string,
-    directives: any[] = [],
-    ...params: any[]
-) {
-    directives.forEach((dir) => {
-        if (dir[lifeCycle]) {
-            dir[lifeCycle](...params);
-        }
-    });
 }
 const TViewFns = {
     elementStart,

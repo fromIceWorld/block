@@ -25,11 +25,55 @@ class ChilComponent {
     emitBuild?: EventEmitter;
     desc = '[child组件中的插值]';
     constructor() {}
-    OnInit() {
-        console.log(this, this.emitBuild);
+    OnInputChanges(changesObj: any) {
+        console.log(
+            '%cChilComponent: %cOnIputChanges',
+            'color:#bf7313',
+            'color:#ff6500',
+            changesObj
+        );
     }
-    OnInputChanges(e: any) {
-        console.log(e);
+    OnInit() {
+        console.log(
+            '%cChilComponent: %cOnIinit',
+            'color:#bf7313',
+            'color:blue'
+        );
+    }
+    OnSlotInit() {
+        console.log(
+            '%cChilComponent: %cOnSlotInit',
+            'color:#bf7313',
+            'color:blue'
+        );
+    }
+    OnSlotChecked() {
+        console.log(
+            '%cChilComponent: %cOnSlotChecked',
+            'color:#bf7313',
+            'color:#ff6500'
+        );
+    }
+    OnViewInit() {
+        console.log(
+            '%cChilComponent: %cOnViewInit',
+            'color:#bf7313',
+            'color:blue'
+        );
+    }
+    OnViewChecked() {
+        console.log(
+            '%cChilComponent: %cOnViewChecked',
+            'color:#bf7313',
+            'color:#ff6500'
+        );
+    }
+    OnDestroy() {
+        console.log(
+            '%cChilComponent: %cOnDestroy',
+            'color:#bf7313',
+            'color:red'
+        );
     }
     emitValue() {
         console.log(this.injectorCompiler);
