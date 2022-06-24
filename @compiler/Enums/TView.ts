@@ -14,5 +14,7 @@ enum TViewIndex {
     Injector,
     Module,
     TNode,
+    References,
+    EmbeddedView,
 }
 export { TViewIndex };

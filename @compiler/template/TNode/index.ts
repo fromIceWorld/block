@@ -17,6 +17,8 @@ class elementNode {
     parent: number = -1;
     TView?: TemplateView;
     finAttributes: ObjectInterface<any>;
+    references;
+    structures;
     constructor(
         tagName: string,
         index: number,
@@ -24,7 +26,9 @@ class elementNode {
         dynamicClasses: string[][],
         attributes: Object = {},
         events: Object = {},
-        dynamicAttributes: ObjectInterface<any> = {}
+        dynamicAttributes: ObjectInterface<any> = {},
+        references: ObjectInterface<string>,
+        structures: ObjectInterface<string>
     ) {
         this.tagName = tagName;
         this.index = index;
@@ -43,6 +47,8 @@ class elementNode {
                 ...dynamicAttributes[key]
             );
         });
+        this.references = references;
+        this.structures = structures;
     }
 }
 class textNode {

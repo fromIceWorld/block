@@ -3,6 +3,7 @@ import { ObjectInterface } from '../../../common/interface';
 import { θd } from '../../../DocumentAPI/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
 import { TemplateDirective } from '../../template/TDirective/index';
+import { TemplateEmbedded } from '../../template/TEmbedded/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
 
@@ -282,6 +283,8 @@ function resolveNode(tagName: string, index: number) {
             attributes,
             events,
             dynamicAttributes,
+            references,
+            structures,
         } = resolveAttributes(index);
     let tNode = new elementNode(
         tagName,
@@ -290,8 +293,15 @@ function resolveNode(tagName: string, index: number) {
         dynamicClasses,
         attributes,
         events,
-        dynamicAttributes
+        dynamicAttributes,
+        references,
+        structures
     );
+    //具有结构性指令的元素，是嵌入视图
+    if (Object.keys(structures).length > 0) {
+        TView[TViewIndex.EmbeddedView].push(index);
+        let embeddedView = new TemplateEmbedded();
+    }
     TView[offset + index] = tNode;
     return tNode;
 }
@@ -306,7 +316,9 @@ function resolveAttributes(index: number) {
         dynamicClasses = new Array(),
         mergeAttributes = Object.create({}),
         events = Object.create({}),
-        dynamicAttributes = Object.create({});
+        dynamicAttributes = Object.create({}),
+        references = Object.create({}),
+        structures = Object.create({});
     for (let i = 0; attributes[index] && i < attributes[index].length; ) {
         let type = attributes[index][i],
             key = attributes[index][i + 1],
@@ -324,6 +336,12 @@ function resolveAttributes(index: number) {
             case AttributeType.staticAttribute:
                 mergeAttributes[key] = value;
                 break;
+            case AttributeType.reference:
+                references[key] = value;
+                break;
+            case AttributeType.structure:
+                structures[key] = value;
+                break;
             default:
                 dynamicAttributes[key] = value;
                 break;
@@ -336,6 +354,8 @@ function resolveAttributes(index: number) {
         attributes: mergeAttributes,
         events,
         dynamicAttributes,
+        references,
+        structures,
     };
 }
 // TODO: 动态属性匹配指令情况

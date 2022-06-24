@@ -9,6 +9,8 @@ interface Configuration {
     interpolationSyntax: [string, string];
     addAttributeMark?: string;
     addEventMark?: string;
+    structureMark?: string;
+    referenceMark?: string;
 }
 let index = 0;
 /**
@@ -23,6 +25,8 @@ class Instruction {
         interpolationSyntax: ['{{', '}}'],
         addAttributeMark: '&',
         addEventMark: '@',
+        structureMark: '*',
+        referenceMark: '#',
     };
     createFn = ``;
     updateFn = ``;
@@ -93,9 +97,17 @@ class Instruction {
             }
         }
     }
+    /**
+     * 解析节点，生成对应指令集,
+     * 此处解析嵌入视图[包含结构性指令 *for, *if]
+     *
+     * @param element 节点
+     */
     resolveElement(element: ElementTNode) {
         this.instructionParams.add('elementStart');
         const { tagName, attributes, closed, children = [] } = element;
+        // 嵌入式图
+
         this.createFn += `
                         elementStart('${tagName}', ${index});`;
         this.resolveAttributes(attributes);
@@ -150,7 +162,8 @@ class Instruction {
     resolveAttributes(attributes: string[]) {
         this.attributes[index] = new Array();
         let hasDynamicAtribute = false,
-            { addAttributeMark, addEventMark } = this.configuration;
+            { addAttributeMark, addEventMark, structureMark, referenceMark } =
+                this.configuration;
         for (let i = 0; i < attributes.length; ) {
             if (attributes[i + 1] == '=') {
                 let prefix = attributes[i][0];
@@ -158,6 +171,13 @@ class Instruction {
                     case addAttributeMark:
                         hasDynamicAtribute = true;
                         this.addDynamicAttrubute(
+                            attributes[i].slice(1),
+                            attributes[i + 2]
+                        );
+                        break;
+                    case structureMark:
+                        hasDynamicAtribute = true;
+                        this.addStructureAttrubute(
                             attributes[i].slice(1),
                             attributes[i + 2]
                         );
@@ -177,16 +197,33 @@ class Instruction {
                 }
                 i += 3;
             } else {
-                this.addStaticAttrubute(attributes[i], '');
+                let prefix = attributes[i][0];
+                switch (prefix) {
+                    case referenceMark:
+                        this.addReference(attributes[i].slice(1));
+                        break;
+                    default:
+                        this.addStaticAttrubute(
+                            attributes[i],
+                            attributes[i + 2]
+                        );
+                        break;
+                }
                 i++;
             }
-        }
-        if (hasDynamicAtribute) {
-            this.updateProperty();
+            if (hasDynamicAtribute) {
+                this.updateProperty();
+            }
         }
     }
     addStaticAttrubute(key: string, value: string) {
         this.attributes[index].push(AttributeType.staticAttribute, key, value);
+    }
+    addReference(refKey: string) {
+        this.attributes[index].push(AttributeType.reference, refKey, '');
+    }
+    addStructureAttrubute(key: string, value: string) {
+        this.attributes[index].push(AttributeType.structure, key, value);
     }
     addDynamicAttrubute(dynamicKey: string, value: string) {
         this.instructionParams.add('updateProperty');

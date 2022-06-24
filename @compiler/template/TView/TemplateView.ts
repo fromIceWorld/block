@@ -85,6 +85,15 @@ class TemplateView extends TemplateDynamic {
             children = this[TViewIndex.Children];
         def && def.template(ViewMode.update, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnSlotChecked');
+        // 指令
+        const nodeHasDirectiveIndex = this[TViewIndex.Directives];
+        for (let index of nodeHasDirectiveIndex) {
+            let tNode = this[index + offset];
+            for (let dir of tNode.directives) {
+                console.log(dir);
+                dir.detectChanges();
+            }
+        }
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].detectChanges();

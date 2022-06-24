@@ -8,8 +8,10 @@
 - [x] 组件生命周期
 - [x] 指令生命周期
 - [x] 依赖注入  `@inject`
-- [ ] 更新逻辑
-- [ ] 更多的指令[for, if,...]
+- [ ] create逻辑
+- [ ] update逻辑
+- [ ] 嵌入视图
+- [ ] 更多的结构性指令[for, if,...]
 - [x] slot
 - [ ] 路由
 - [ ] 服务端渲染
@@ -86,22 +88,21 @@
 
 ## 生命周期
 
-## view
+## View
 
-`广度优先`
+视图：`EmbeddedView`, `TemplateView`
+
+### EmbeddedView
+
+`嵌入视图`：结构性指令有关[for, if,....]
 
 ```typescript
-`渲染`: create + update
-`create`: attach
-`update`: detectChanges
-`destroy`: 
-------------------------------------
-`分离出检查树：detach`
-`重新添加到检查树：rettach`
-
+结构性指令可对view产生影响, 独立出来更容易处理
 ```
 
-### component
+### TemplateView
+
+`广度优先`
 
 ```typescript
 生命周期依据指令集函数分离`create`, `update`,
@@ -121,7 +122,7 @@ OnDestroy: view被销毁时
 `destroy`: OnDestroy
 ```
 
-### directive
+### DirectiveView
 
 ```typescript
 功能：
@@ -134,6 +135,15 @@ OnDestroy: view被销毁时
 
 ```
 
+## view渲染逻辑
+
+```typescript
+`初始渲染`
+1.先将静态数据添加到view树
+2.运行detectChange，进行更新
+
+```
+
 ## view更新逻辑
 
 ```typescript
@@ -141,7 +151,6 @@ OnDestroy: view被销毁时
 1.zone.js: 监听异步任务，为空时，执行检查【❌,】
 2.暴露API, 手动触发: 【✔,组件足够小，功能足够单一,一个组件可能只需要更新一次，甚至不用更新】
 2.vue: 数据绑定,数据更新时，待更新视图入栈【❌,view已经被精准编译, 不需要数据驱动】
-
 --------------------------------------------
 
 ```

@@ -24,13 +24,15 @@ class TemplateDirective extends TemplateDynamic {
         Hook(
             this[TViewIndex.Context],
             'OnInit',
-            this[TViewIndex.Parent]![this[TViewIndex.TNode]!.parent],
+            this[TViewIndex.TNode]!.parent == -1
+                ? this[TViewIndex.Host]
+                : this[TViewIndex.Parent]![this[TViewIndex.TNode]!.parent],
             this[TViewIndex.TNode]
         );
     }
     detach() {}
     reattach() {}
-    OnInputChanges(): void {
+    detectChanges(): void {
         this.updateInput();
     }
     destroy() {}

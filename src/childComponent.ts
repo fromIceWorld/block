@@ -3,8 +3,12 @@ import { EventEmitter } from '../common/event/EventEmitter';
 import { Component, Inject, Input, Output } from '../decorators/index';
 @Component({
     selector: `app-child`,
-    template: ` app-child组件: {{ desc }}
+    template: ` <h1>
+            -------------------ChilComponent------------------------
+        </h1>
+        app-child组件: {{ desc }}
         <div
+            *for="let item of list"
             style="width: 67px;
                     padding: 10px 15px;
                     border-radius: 6px;

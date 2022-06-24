@@ -18,11 +18,11 @@ const offset = 20;
 
 class TemplateDynamic extends Array {
     [TViewIndex.Host]?: Element | DocumentFragment;
-    [TViewIndex.RootElements] = new Array();
+    [TViewIndex.RootElements]: number[] = [];
     [TViewIndex.TNode]?: elementNode;
     [TViewIndex.LView]?: LogicView;
     [TViewIndex.Parent]?: TemplateView;
-    [TViewIndex.Children] = new Array();
+    [TViewIndex.Children]: number[] = [];
     [TViewIndex.Directives]: Set<number> = new Set();
     [TViewIndex.Class]?: ConstructortInterface;
     [TViewIndex.Context]: ObjectInterface<any> = {};
@@ -38,6 +38,8 @@ class TemplateDynamic extends Array {
             ? this[TViewIndex.Module]['moduleCore'].inRange
             : [];
     };
+    [TViewIndex.References]: ObjectInterface<number[]> = {};
+    [TViewIndex.EmbeddedView]: Array<number> = new Array();
     constructor() {
         super();
         Object.setPrototypeOf(this, TemplateDynamic.prototype);

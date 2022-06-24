@@ -17,6 +17,7 @@ import { Component } from '../decorators/index';
             ></div>
         </div>
         <p
+            #ref
             class="forP bindClass2"
             &class="{bindClass1: class1,bindClass2: class2}"
         >

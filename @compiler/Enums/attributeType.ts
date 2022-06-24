@@ -6,5 +6,7 @@ enum AttributeType {
     staticAttribute,
     dynamicAttrubute,
     event,
+    reference,
+    structure,
 }
 export { AttributeType };
