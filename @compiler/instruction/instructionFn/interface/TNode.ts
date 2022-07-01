@@ -9,7 +9,7 @@ interface ElementTNode {
     tagName: string;
     attributes: Array<string>;
     closed: boolean;
-    children: Array<TNode>;
+    children: Array<number>;
     type: number;
     startPosition: Position;
     endPosition: Position;

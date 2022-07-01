@@ -1,9 +1,16 @@
 import { TNode } from '../@compiler/instruction/instructionFn/interface/TNode';
-import { elementNode } from '../@compiler/template/TNode/index';
+import { abstractTNode, elementNode } from '../@compiler/template/TNode/index';
+import { Input } from '../decorators/index';
 
 class firstDirective {
+    @Input('forOf')
+    arr: any;
     name = '第一个指令';
-    static selector = '[data-angular]';
+    static selector = 'forOf';
+    transform(tNodes: abstractTNode[]) {
+        console.log(tNodes);
+        return tNodes;
+    }
     OnInputChanges(changesObj: any) {
         console.log(
             '%cfirstDirective: %cOnInputChanges',

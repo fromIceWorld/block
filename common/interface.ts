@@ -4,6 +4,7 @@ interface ObjectInterface<V> {
 }
 interface ConstructortInterface {
     new (): any;
+    constructor: Function;
     [key: string]: any;
 }
 export { ObjectInterface, ConstructortInterface };

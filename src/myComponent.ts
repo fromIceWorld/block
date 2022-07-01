@@ -8,9 +8,9 @@ import { Component } from '../decorators/index';
             &style="{width: dataWidth}"
             @change="go($event,'query')"
         >
-            子元素:【文本】
+            文本节点:【文本】
             <div
-                style="width: 100px;height: 100px;background-color:#e5e0e1;"
+                style="width: 100px;height: 100px;background-color:#b52f4a;"
                 &style="{width: dataWidth}"
                 &name="block"
                 @click="emit($event,123)"

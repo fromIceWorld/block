@@ -1,15 +1,19 @@
 import { resolveSelector } from '../../../common/index';
 import { ObjectInterface } from '../../../common/interface';
 import { θd } from '../../../DocumentAPI/index';
+import { forof } from '../../../src/forOf';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
+import { viewContainer } from '../../template/embedded/index';
 import { TemplateDirective } from '../../template/TDirective/index';
 import { TemplateEmbedded } from '../../template/TEmbedded/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
 
-interface Attributes {
-    [key: string]: Function;
+interface ViewDefination {
+    attributes: Array<null | Array<number | string>>;
+    template: Function;
 }
+
 const offset = 20;
 /**
  * 指令集运行栈，控制上下文的 TView
@@ -36,6 +40,65 @@ function popContext() {
         preTView = tView[TViewIndex.Parent]!;
     setCurrentTView(preTView);
 }
+function createEmbeddedViewStart(tagName: string, index: number, def) {
+    let TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        native = θd.createElement('template'),
+        { attributes } = currentTView()[TViewIndex.ComponentDef],
+        InRanges = TView[TViewIndex.InRange]();
+    // TView[TViewIndex.Children].push(index);
+    TView[TViewIndex.Directives].add(index);
+    let tNode = new elementNode(
+            'template',
+            index,
+            undefined,
+            undefined,
+            {
+                item: 'item',
+            },
+            undefined,
+            {
+                forOf: [
+                    'context',
+                    `with(context){
+                    return arr
+                }`,
+                ],
+            }
+        ),
+        container;
+    tNode.native = native;
+    LView[index + offset] = native;
+    TView[index + offset] = tNode;
+    let dir = new forof('', def, tNode);
+    container = new viewContainer(native, index, forof, dir);
+    dir.container = container;
+    console.log(container);
+    tNode.TView = container;
+    tNode.directives = [dir];
+    console.log(tagName, index, container, tNode, InRanges);
+    // container.directives.push(...directives);
+    addStaticAttributes(
+        tNode.native as Element,
+        tNode.attributes[AttributeType.staticAttribute]
+    );
+    progressContext(index);
+}
+function createEmbeddedViewEnd(tagName: string) {
+    elementEnd(tagName);
+}
+function updateEmbeddedView(
+    index: number,
+    view: { attributes: any[]; template: Function }
+) {
+    let TView = currentTView(),
+        tNode = TView[index + offset],
+        { attributes, finAttributes } = tNode,
+        dynamicAttrubute = attributes[AttributeType.dynamicAttrubute];
+    updateProp(index, dynamicAttrubute, finAttributes);
+    // TView[index + offset].attach();
+    console.log('更新嵌入视图', TView, view);
+}
 /**
  * 建立真实DOM元素
  *
@@ -50,7 +113,7 @@ function elementStart(tagName: string, index: number) {
     // HookDirective('OnInit', tNode.directives);
     // 添加静态属性
     addStaticAttributes(
-        tNode.native!,
+        tNode.native as Element,
         tNode.attributes[AttributeType.staticAttribute]
     );
     progressContext(index);
@@ -138,7 +201,7 @@ function updateProperty(index: number) {
  */
 function updateProp(
     index: number,
-    attributes: Attributes,
+    attributes: ObjectInterface<Function>,
     finAttributes: ObjectInterface<any>
 ) {
     let TView = currentTView(),
@@ -223,7 +286,7 @@ function creatText(index: number, content: string) {
         LView = TView[TViewIndex.LView],
         text = θd.createTextNode(content);
     LView[offset + index] = text;
-    TView[offset + index] = new textNode(content, text);
+    TView[offset + index] = new textNode(content, text, index);
     // 解析 text,确定text的属性
     // resolveText()
     progressContext(index);
@@ -255,6 +318,7 @@ function createComment(index: number, content: string) {
     // 解析 text,确定text的属性
     // resolveText()
     progressContext(index);
+    return comment;
 }
 /**
  * 为节点添加事件
@@ -453,7 +517,7 @@ function bootstrapView(rootComponent: { new (): any }) {
     console.log(instructionIFrameStates, rootTView);
     return rootTView;
 }
-const TViewFns = {
+const TViewFns: ObjectInterface<Function> = {
     elementStart,
     listener,
     elementEnd,
@@ -461,8 +525,12 @@ const TViewFns = {
     creatText,
     updateText,
     createComment,
+    currentTView,
     setCurrentTView,
     pushContext,
     popContext,
+    createEmbeddedViewStart,
+    createEmbeddedViewEnd,
+    updateEmbeddedView,
 };
-export { TViewFns, bootstrapView };
+export { TViewFns, bootstrapView, ViewDefination };

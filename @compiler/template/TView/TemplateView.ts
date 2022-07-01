@@ -42,7 +42,6 @@ class TemplateView extends TemplateDynamic {
             if (!this[TViewIndex.ComponentDef]) {
                 const compilerInstance =
                     this[TViewIndex.Injector]!.get(compiler);
-                console.log(compilerInstance);
                 this[TViewIndex.ComponentDef] = compilerInstance.transform(
                     this[TViewIndex.Class]
                 );

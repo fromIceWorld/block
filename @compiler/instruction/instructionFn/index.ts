@@ -1,4 +1,5 @@
 import { AttributeType, elementType } from '../../Enums/index';
+import { TViewFns } from '../InstructionContext/index';
 import {
     CommentTNode,
     ElementTNode,
@@ -12,7 +13,6 @@ interface Configuration {
     structureMark?: string;
     referenceMark?: string;
 }
-let index = 0;
 /**
  * 接收 tokenTree,将token解析成指令集。
  *
@@ -21,6 +21,7 @@ let index = 0;
  */
 class Instruction {
     treeNode: TNode[] = [];
+    index: number = 0;
     configuration: Configuration = {
         interpolationSyntax: ['{{', '}}'],
         addAttributeMark: '&',
@@ -34,6 +35,7 @@ class Instruction {
     componentDef?: Function;
     elements: Array<Element> = new Array();
     attributes: Array<number | string | string[]>[] = new Array();
+    embeddedViews: any[] = [];
     instructionParams: Set<string> = new Set();
     constructor(addConfiguration: Configuration = {} as Configuration) {
         this.configuration = Object.assign(
@@ -42,7 +44,7 @@ class Instruction {
         );
     }
     init(treeNode: TNode[]) {
-        index = 0; // 初始化全局节点索引
+        this.index = 0; // 初始化全局节点索引
         this.treeNode = treeNode;
         this.createFn = ``;
         this.updateFn = ``;
@@ -50,9 +52,16 @@ class Instruction {
         this.attributes = [];
         this.instructionParams.clear();
     }
-    createFactory(treeNode: TNode[] = []) {
+    /**
+     * 只创造create，update 函数体
+     * @param treeNode 节点树
+     */
+    createFunctionBody(treeNode: TNode[] = []) {
         this.init(treeNode);
         this.resolveTNodes(this.treeNode);
+    }
+    createFactory(treeNode: TNode[] = []) {
+        this.createFunctionBody(treeNode);
         this.createTemplateFn();
         this.createComponentDef();
     }
@@ -60,6 +69,19 @@ class Instruction {
         let componentDef = (this.componentDef = new Function(
             ...Array.from(this.instructionParams),
             `
+            let embeddedViews = [${
+                this.embeddedViews.length
+                    ? this.embeddedViews
+                          .map((obj) => {
+                              let { attributes, template } = obj;
+                              return `{
+                                    attributes:${JSON.stringify(attributes)},
+                                    template:${template.toString()}
+                                  }`;
+                          })
+                          .join(',\n')
+                    : '""'
+            }];
             let attributes = ${JSON.stringify(this.attributes)};
             return {
                 attributes,
@@ -104,16 +126,77 @@ class Instruction {
      * @param element 节点
      */
     resolveElement(element: ElementTNode) {
-        this.instructionParams.add('elementStart');
-        const { tagName, attributes, closed, children = [] } = element;
+        const {
+            tagName,
+            attributes,
+            closed,
+            children = [],
+            isResolved,
+        } = element;
+        const structures = this.resolveStructure(element);
         // 嵌入式图
-
+        if (!isResolved && structures.length) {
+            this.attributes[this.index] = [
+                'for',
+                'context',
+                `with(context){
+                    return arr
+                }`,
+            ];
+            this.resolveEmbedded(element);
+            this.resolveTNodes([element]);
+            this.createFn += `
+                        createEmbeddedViewEnd();`;
+        } else {
+            this.instructionParams.add('elementStart');
+            this.createFn += `
+                        elementStart('${tagName}', ${this.index});`;
+            this.resolveAttributes(attributes);
+            this.index++;
+            this.resolveTNodes(children);
+            this.closeElement(element);
+        }
+    }
+    resolveStructure(element: ElementTNode): Array<string | number> {
+        const { attributes } = element;
+        let structures: Array<string | number> = [],
+            { structureMark } = this.configuration;
+        for (let i = attributes.length - 1; i > 1; ) {
+            if (
+                attributes[i - 1] == '=' &&
+                attributes[i - 2].startsWith(structureMark!)
+            ) {
+                structures.push(
+                    AttributeType.structure,
+                    attributes[i - 2].slice(1),
+                    attributes[i]
+                );
+                element.attributes.splice(i - 2, 3);
+                i -= 3;
+            } else {
+                i--;
+            }
+        }
+        return structures;
+    }
+    resolveEmbedded(element: ElementTNode) {
+        this.instructionParams.add('createEmbeddedViewStart');
+        this.instructionParams.add('createEmbeddedViewEnd');
+        this.instructionParams.add('updateEmbeddedView');
         this.createFn += `
-                        elementStart('${tagName}', ${index});`;
-        this.resolveAttributes(attributes);
-        index++;
-        this.resolveTNodes(children);
-        this.closeElement(element);
+                        createEmbeddedViewStart('template', ${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
+        this.updateFn += `
+                        updateEmbeddedView(${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
+        element.isResolved = true;
+        let instructionIns = new Instruction();
+        instructionIns.createFactory([element]);
+        let paramsString = Array.from(instructionIns.instructionParams),
+            paramsFns = paramsString.map((key) => TViewFns[key]);
+        let componentDef = instructionIns.componentDef!(...paramsFns);
+        this.embeddedViews.push(componentDef);
+        console.log(componentDef);
+        // 为嵌入视图生成新的view
+        this.index++;
     }
     closeElement(element: ElementTNode) {
         this.instructionParams.add('elementEnd');
@@ -144,23 +227,25 @@ class Instruction {
             }
         );
         this.createFn += `
-                        creatText(${index},'${expression}');`;
+                        creatText(${this.index},'${expression}');`;
         if (hasInterpolation) {
             this.instructionParams.add('updateText');
             this.updateFn += `
-                        updateText(${index},'${expression}');`;
+                        updateText(${this.index},'${expression}');`;
         }
-        index++;
+        this.index++;
     }
     resolveComment(element: CommentTNode) {
         this.instructionParams.add('createComment');
         let { content } = element;
         this.createFn += `
-                        createComment(${index}, '${content}');`;
-        index++;
+                        createComment(${this.index}, '${content}');`;
+        this.index++;
     }
     resolveAttributes(attributes: string[]) {
-        this.attributes[index] = new Array();
+        this.attributes[this.index] = [];
+        let structures: string[] = [],
+            attributesArray = new Array();
         let hasDynamicAtribute = false,
             { addAttributeMark, addEventMark, structureMark, referenceMark } =
                 this.configuration;
@@ -177,7 +262,7 @@ class Instruction {
                         break;
                     case structureMark:
                         hasDynamicAtribute = true;
-                        this.addStructureAttrubute(
+                        structures.push(
                             attributes[i].slice(1),
                             attributes[i + 2]
                         );
@@ -211,19 +296,21 @@ class Instruction {
                 }
                 i++;
             }
-            if (hasDynamicAtribute) {
-                this.updateProperty();
-            }
         }
+        if (hasDynamicAtribute) {
+            this.updateProperty();
+        }
+        return { structures, attributesArray };
     }
     addStaticAttrubute(key: string, value: string) {
-        this.attributes[index].push(AttributeType.staticAttribute, key, value);
+        this.attributes[this.index].push(
+            AttributeType.staticAttribute,
+            key,
+            value
+        );
     }
     addReference(refKey: string) {
-        this.attributes[index].push(AttributeType.reference, refKey, '');
-    }
-    addStructureAttrubute(key: string, value: string) {
-        this.attributes[index].push(AttributeType.structure, key, value);
+        this.attributes[this.index].push(AttributeType.reference, refKey, '');
     }
     addDynamicAttrubute(dynamicKey: string, value: string) {
         this.instructionParams.add('updateProperty');
@@ -245,21 +332,25 @@ class Instruction {
                 type = AttributeType.dynamicAttrubute;
                 break;
         }
-        this.attributes[index].push(type, dynamicKey, contextValue);
+        this.attributes[this.index].push(type, dynamicKey, contextValue);
     }
     updateProperty() {
         this.instructionParams.add('updateProperty');
         this.updateFn += `
-                        updateProperty(${index});`;
+                        updateProperty(${this.index});`;
     }
     addListener(eventName: string, callback: string) {
         this.instructionParams.add('listener');
-        this.attributes[index].push(AttributeType.event, eventName, callback);
+        this.attributes[this.index].push(
+            AttributeType.event,
+            eventName,
+            callback
+        );
         let [fn, params] = callback.replace(/[()]/g, ' ').split(' ');
         this.createFn += `
                         listener('${eventName}',function($event){
                                             return ctx['${fn}'](${params});
-                                        }, ${index});`;
+                                        }, ${this.index});`;
     }
 }
 export { Instruction };

@@ -4,7 +4,7 @@ import { Component, Inject, Input, Output } from '../decorators/index';
 @Component({
     selector: `app-child`,
     template: ` <h1>
-            -------------------ChilComponent------------------------
+            -------------------ChildComponent------------------------
         </h1>
         app-child组件: {{ desc }}
         <div
@@ -26,6 +26,7 @@ class ChilComponent {
     @Inject(compiler) injectorCompiler: any;
     @Input('value') parentValue?: string;
     @Output('childEmit')
+    arr = [1, 2];
     emitBuild?: EventEmitter;
     desc = '[child组件中的插值]';
     constructor() {}

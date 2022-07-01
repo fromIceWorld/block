@@ -25,16 +25,11 @@ class compiler {
         console.log('解析template生成的tokenTree', tokenTree);
         this.instruction.createFactory(tokenTree as any);
         let paramsString = Array.from(this.instruction.instructionParams),
-            paramsFns = [];
-        for (let key of paramsString) {
-            paramsFns.push(this.instructionContext[key as keyof Object]);
-        }
-        let componentDef = this.instruction.componentDef!(
-            ...paramsFns,
-            component
-        );
+            paramsFns = paramsString.map((key) => this.instructionContext[key]);
+        let componentDef = this.instruction.componentDef!(...paramsFns);
         console.log(componentDef);
         return componentDef;
     }
+    transformByTNodes() {}
 }
 export { compiler };

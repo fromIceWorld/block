@@ -19,6 +19,7 @@ class TemplateDirective extends TemplateDynamic {
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
     }
+    transform() {}
     attach() {
         this.createContext();
         Hook(
