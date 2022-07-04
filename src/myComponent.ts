@@ -10,6 +10,7 @@ import { Component } from '../decorators/index';
         >
             文本节点:【文本】
             <div
+                *if="exp"
                 style="width: 100px;height: 100px;background-color:#b52f4a;"
                 &style="{width: dataWidth}"
                 &name="block"

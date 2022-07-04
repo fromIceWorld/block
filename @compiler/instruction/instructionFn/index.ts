@@ -137,16 +137,19 @@ class Instruction {
         // 嵌入式图
         if (!isResolved && structures.length) {
             this.attributes[this.index] = [
-                'for',
-                'context',
-                `with(context){
-                    return arr
+                AttributeType.dynamicAttrubute,
+                structures[1],
+                [
+                    'context',
+                    `with(context){
+                        return '${structures[2]}'
                 }`,
+                ],
             ];
             this.resolveEmbedded(element);
             this.resolveTNodes([element]);
             this.createFn += `
-                        createEmbeddedViewEnd();`;
+                        createEmbeddedViewEnd('template');`;
         } else {
             this.instructionParams.add('elementStart');
             this.createFn += `

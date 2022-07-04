@@ -8,14 +8,14 @@ import { Component, Inject, Input, Output } from '../decorators/index';
         </h1>
         app-child组件: {{ desc }}
         <div
-            *for="let item of list"
+            *forOf="list"
             style="width: 67px;
                     padding: 10px 15px;
                     border-radius: 6px;
                     background-color: #72d381"
             @click="emitValue()"
         >
-            按钮
+            按钮{{ item }}
         </div>
         <p>parentValue:{{ parentValue }}</p>
         <slot name="slot1"></slot>

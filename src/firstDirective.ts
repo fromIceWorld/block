@@ -19,6 +19,7 @@ class firstDirective {
             changesObj
         );
     }
+    detectChanges() {}
     OnInit(pTNode: TNode | undefined, Tnode: elementNode) {
         console.log(
             '%cfirstDirective: %cOnInit',

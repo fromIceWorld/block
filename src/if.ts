@@ -2,13 +2,13 @@ import { ViewDefination } from '../@compiler/instruction/InstructionContext/inde
 import { viewContainer } from '../@compiler/template/embedded/index';
 import { Input } from '../decorators/index';
 
-class forof {
-    @Input('forOf')
+class bIf {
+    @Input('if')
     arr: any;
-    name = '第一个指令';
+    name = 'if指令';
     views: any[] = [];
     container: viewContainer;
-    static selector = 'forOf';
+    static selector = 'if';
     constructor(private index: number, private defination: ViewDefination) {
         this.container = new viewContainer(index);
         console.log(this.container);
@@ -18,19 +18,20 @@ class forof {
     attach() {}
     detectChanges() {
         this.OnInputChanges({
-            currentValue: [1, 2],
-            previousValue: [1, 2],
+            currentValue: true,
+            previousValue: true,
         });
     }
     OnInputChanges(changesObj: any) {
-        console.log('forof指令start');
+        console.log('if指令start');
         const { currentValue, previousValue } = changesObj;
-        currentValue.forEach((item) => {
-            console.log(item);
-            this.views?.push([this.defination, item]);
-        });
-        console.log('forof指令end', this.views);
-        this.container.diff(this.views);
+        if (previousValue && !currentValue) {
+            this.views = [];
+            this.container.diff(this.views);
+        } else {
+            this.views.push([this.defination, {}]);
+            this.container.diff(this.views);
+        }
     }
 }
-export { forof };
+export { bIf };
