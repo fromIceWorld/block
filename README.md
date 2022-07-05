@@ -11,7 +11,7 @@
 - [ ] create逻辑
 - [ ] update逻辑
 - [ ] 嵌入视图
-- [ ] 更多的结构性指令[for, if,...]
+- [x] 更多的结构性指令[for, if,...]
 - [x] slot
 - [ ] 路由
 - [ ] 服务端渲染
@@ -99,7 +99,10 @@
 ```typescript
 结构性指令可对view产生影响, 独立出来更容易处理;
 ----------------------------------------------
-为结构性指令创建一层对接层`viewContainer`,结构性指令对[defination,context],进行修改，推入viewContainer，viewContainer对previous 和 current 数据对比，生成/销毁 embeddedView。
+`1`: 结构性指令 --创建--> viewContainer 
+`2`: view生命周期 --触发--> viewContainer生命周期
+`3`: viewContainer生命周期 --触发--> 指令更改defination
+`4`: 指令更改后的 defination 传递给 viewContainer 作为diff
 ```
 
 ### TemplateView

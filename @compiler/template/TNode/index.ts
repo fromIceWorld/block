@@ -15,7 +15,7 @@ class elementNode extends TNode {
     type: number = elementType.Element;
     tagName: string;
     index: number;
-    native?: Element | Comment;
+    native?: Element;
     attributes = new Array();
     directives: ObjectInterface<any>[] = [];
     component?: Function;

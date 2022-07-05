@@ -17,7 +17,7 @@ enum ViewMode {
 const offset = 20;
 
 class TemplateDynamic extends Array {
-    [TViewIndex.Host]?: Element | DocumentFragment;
+    [TViewIndex.Host]?: Element | HTMLTemplateElement;
     [TViewIndex.RootElements]: number[] = [];
     [TViewIndex.TNode]?: elementNode;
     [TViewIndex.LView]?: LogicView;
@@ -39,7 +39,7 @@ class TemplateDynamic extends Array {
             : [];
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
-    [TViewIndex.EmbeddedView]: Array<number> = new Array();
+    [TViewIndex.EmbeddedView]: Array<ObjectInterface<any>> = new Array();
     constructor() {
         super();
         Object.setPrototypeOf(this, TemplateDynamic.prototype);

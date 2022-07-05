@@ -253,8 +253,8 @@ class Instruction {
             { addAttributeMark, addEventMark, structureMark, referenceMark } =
                 this.configuration;
         for (let i = 0; i < attributes.length; ) {
+            let prefix = attributes[i][0];
             if (attributes[i + 1] == '=') {
-                let prefix = attributes[i][0];
                 switch (prefix) {
                     case addAttributeMark:
                         hasDynamicAtribute = true;
@@ -285,16 +285,12 @@ class Instruction {
                 }
                 i += 3;
             } else {
-                let prefix = attributes[i][0];
                 switch (prefix) {
                     case referenceMark:
                         this.addReference(attributes[i].slice(1));
                         break;
                     default:
-                        this.addStaticAttrubute(
-                            attributes[i],
-                            attributes[i + 2]
-                        );
+                        this.addStaticAttrubute(attributes[i], '');
                         break;
                 }
                 i++;

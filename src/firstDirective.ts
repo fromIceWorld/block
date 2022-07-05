@@ -3,10 +3,10 @@ import { abstractTNode, elementNode } from '../@compiler/template/TNode/index';
 import { Input } from '../decorators/index';
 
 class firstDirective {
-    @Input('forOf')
+    @Input('vds')
     arr: any;
     name = '第一个指令';
-    static selector = 'forOf';
+    static selector = 'cvb';
     transform(tNodes: abstractTNode[]) {
         console.log(tNodes);
         return tNodes;

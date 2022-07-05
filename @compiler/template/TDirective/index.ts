@@ -1,12 +1,16 @@
 import { ConstructortInterface } from '../../../common/interface';
+import { InputChanges } from '../../../decorators/index';
 import { Hook } from '../../../lifeCycle/index';
 import { TViewIndex } from '../../Enums/index';
+import { ViewDefination } from '../../instruction/InstructionContext/index';
 import { TemplateDynamic } from '../template';
 import { elementNode } from '../TNode/index';
 import { TemplateView } from '../TView/TemplateView';
 
 class TemplateDirective extends TemplateDynamic {
     constructor(
+        private index: number,
+        def: ViewDefination,
         tNode: elementNode,
         tView: TemplateView,
         dir: ConstructortInterface
@@ -35,6 +39,11 @@ class TemplateDirective extends TemplateDynamic {
     reattach() {}
     detectChanges(): void {
         this.updateInput();
+        Hook(
+            this[TViewIndex.Context],
+            'OnInputChanges',
+            this[TViewIndex.Context][InputChanges]
+        );
     }
     destroy() {}
 }

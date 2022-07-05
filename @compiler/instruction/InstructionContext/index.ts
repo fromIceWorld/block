@@ -2,7 +2,7 @@ import { resolveSelector } from '../../../common/index';
 import { ObjectInterface } from '../../../common/interface';
 import { θd } from '../../../DocumentAPI/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
-import { TemplateDirective } from '../../template/TDirective/index';
+import { viewContainer } from '../../template/embedded/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
 
@@ -37,7 +37,11 @@ function popContext() {
         preTView = tView[TViewIndex.Parent]!;
     setCurrentTView(preTView);
 }
-function createEmbeddedViewStart(tagName: string, index: number, def) {
+function createEmbeddedViewStart(
+    tagName: string,
+    index: number,
+    def: ViewDefination
+) {
     // 解析组件，指令建立抽象节点
     let tNode = resolveNode(tagName, index);
     createNative(tNode, index);
@@ -83,13 +87,16 @@ function createNative(tNode: elementNode, index: number) {
         LView = TView[TViewIndex.LView],
         { tagName, finAttributes } = tNode,
         slotName: string = finAttributes['name'],
+        parentTView = TView[TViewIndex.Parent],
         dom = θd.createElement(tagName);
+    while (parentTView instanceof viewContainer) {
+        parentTView = parentTView[TViewIndex.Parent];
+    }
     if (tagName == 'slot') {
         let slotsIndex = TView[TViewIndex.Slots],
             filters,
             slotsDOM = slotsIndex.map(
-                (index: number) =>
-                    TView[TViewIndex.Parent][TViewIndex.LView][index + offset]
+                (index: number) => parentTView[TViewIndex.LView][index + offset]
             );
         filters = slotsDOM.filter(
             (d: Element) => d.getAttribute('slot') == slotName
@@ -383,7 +390,11 @@ function resolveAttributes(index: number) {
  *
  * @param index 节点索引
  */
-function resolveDirective(tagName: string, index: number, def) {
+function resolveDirective(
+    tagName: string,
+    index: number,
+    def?: ViewDefination
+) {
     let TView = currentTView(),
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index];
@@ -406,10 +417,8 @@ function resolveDirective(tagName: string, index: number, def) {
                 typeof attributes[AttributeType.dynamicAttrubute][k] ==
                 'function'
             ) {
-                let dirInstance = new dir(index, def, TNode);
-                // Hook(context, 'OnInputChanges', context[InputChanges]);
-                directives.push(dirInstance);
-                TView[TViewIndex.Directives].add(index);
+                let container = new viewContainer(index, def!, dir);
+                TView[TViewIndex.Children].push(index);
             }
         } else {
             if (
@@ -418,7 +427,7 @@ function resolveDirective(tagName: string, index: number, def) {
             ) {
                 TView[TViewIndex.Directives].add(index);
                 // let context = createDirectivesContext(dir, TNode);
-                let dirInstance = new TemplateDirective(TNode, TView, dir);
+                let dirInstance = new dir(index, def, TNode);
                 // Hook(context, 'OnInputChanges', context[InputChanges]);
                 directives.push(dirInstance);
             }
@@ -477,7 +486,6 @@ function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
     rootTView.attach();
     rootTView.detectChanges();
-    console.log(instructionIFrameStates, rootTView);
     return rootTView;
 }
 const TViewFns: ObjectInterface<Function> = {

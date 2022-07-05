@@ -16,5 +16,6 @@ enum TViewIndex {
     TNode,
     References,
     EmbeddedView,
+    Structures,
 }
 export { TViewIndex };
