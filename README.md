@@ -5,12 +5,9 @@
 - [x] 数据与view绑定更新。
 - [ ] 更好的分层, 代码逻辑, 生命周期, 依赖注入
 - [x] 父子传值  `@Input` `@Output`
-- [x] 组件生命周期
-- [x] 指令生命周期
+- [ ] 组件生命周期
+- [ ] 指令生命周期
 - [x] 依赖注入  `@inject`
-- [ ] create逻辑
-- [ ] update逻辑
-- [ ] 嵌入视图
 - [x] 更多的结构性指令[for, if,...]
 - [x] slot
 - [ ] 路由
@@ -20,32 +17,58 @@
 
 
 
-## 更新逻辑
+## view
+
+`EmbeddedView`, `TemplateView`
+
+```typescript
+`1.`静态视图
+	 无数据绑定，无指令，组件存在的节点;
+`2.`组件视图
+	 组件存在的节点
+`3.`嵌入视图
+	 结构性指令附着的节点
+```
+
+## 核心逻辑
 
 将template编译成指令集，从而将组件区分成两种状态[create, update]。
 
-`create`: 创建静态DOM。
+1. create
+   1. 创建静态节点，在节点数据中解析出指令，组件
+2. update
+   1. 更新绑定数据的节点上的属性
+3. 指令更新
+4. 组件的更新
 
-`update`: 由于数据的更改，引发页面的更改,精准更新对应DOM[ 编译支持 ]。
+## 逻辑分层
 
-## 分层
+### platform[core]
 
-### platform
-
+```typescript
+平台控制Block的核心能力: 
+`parseHtml`: 解析template
+`Instruction`:根据nodeTree，生成view的指令集
+`Injector`: 依赖注入
 ```
-平台控制Block的核心能力: parseHtml, Instruction, renderDomAPI,Injector。
+
+### environment[dynamic]
+
+```typescript
+运行环境[browser/...]
+`renderDomAPI`:将抽象数据渲染成真实节点的API     
 ```
 
 ### application
 
 ```
-一个运行中的项目。
+一个运行的实例。
 ```
 
 ### module
 
-```
-用于隔离组件,指令,pipe等。
+```typescript
+用于隔离组件,指令,pipe等, 使代码之间耦合度更低，方便低代码拆分。
 ```
 
 ## 组件传值
@@ -88,6 +111,10 @@
 
 ## 生命周期
 
+### 指令
+
+### 组件
+
 ## View
 
 视图：`EmbeddedView`, `TemplateView`
@@ -127,61 +154,22 @@ OnDestroy: view被销毁时
 `destroy`: OnDestroy
 ```
 
-### DirectiveView
-
-```typescript
-功能：
-1.更改属性 
-2.拓展模板 for，if,同组件迁移模板
-
-`OnInputChanges`: 输入属性更改时
-`OnInit`: 初始化
-`OnDestroy`: host属性更改引起的指令销毁
-
-```
-
-## view渲染逻辑
-
-```typescript
-`初始渲染`
-1.先将静态数据添加到view树
-2.运行detectChange，进行更新
-
-```
-
-## view更新逻辑
-
-```typescript
-`何时更新`：数据更新时【http请求, 定时任务,】
-1.zone.js: 监听异步任务，为空时，执行检查【❌,】
-2.暴露API, 手动触发: 【✔,组件足够小，功能足够单一,一个组件可能只需要更新一次，甚至不用更新】
-2.vue: 数据绑定,数据更新时，待更新视图入栈【❌,view已经被精准编译, 不需要数据驱动】
---------------------------------------------
-
-```
-
-## Inject
-
-依赖注入<属性装饰器>
-
-```
-
-```
-
 ## 结构性指令
 
-`viewContainer`
+- [x] for 
+- [x] if
+- [ ] 多指令串行
+- [ ] 子组件递归
 
-for
+## 坑
 
-```
-1.创建viewContainer
-2.当指令数据更新时，推入for模板内的[defination,context]到viewContainer，viewContainer接管后续view
-```
+1. template节点只能[clone、importNode]内联的事件，无法复制`addEventListener`的事件
 
-if
+   ```html
+   1. 内联 <div onClick="console.log"></div>
+   2. addEventListener
+   ```
 
-```
-👆类似
-```
+2. template.content内只能加入node，node的事件无法留存
 
+   

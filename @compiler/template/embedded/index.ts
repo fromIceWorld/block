@@ -12,7 +12,7 @@ import { TemplateView } from '../TView/TemplateView';
 class viewContainer extends TemplateDynamic {
     currentViewDefination?: ViewDefination[];
     previousViewDefination?: ViewDefination[] = [];
-    childrenView?: embeddedView[];
+    childrenView: embeddedView[] = [];
     constructor(
         private index: number,
         private def: ViewDefination,
@@ -32,11 +32,7 @@ class viewContainer extends TemplateDynamic {
             ? (dir as any)[componentFromModule]
             : null;
         this.injectProviders();
-        this[TViewIndex.Context] = Object.assign(
-            {},
-            currentTView[TViewIndex.Context],
-            this.initContext()
-        );
+        this[TViewIndex.Context] = currentTView[TViewIndex.Context];
         this[TViewIndex.EmbeddedView].push(new dir());
     }
     createEmbeddedView() {
@@ -61,33 +57,35 @@ class viewContainer extends TemplateDynamic {
         this.diff(views);
         TViewFns.popContext();
     }
-    diff(views: any[]) {
+    diff(viewsContext: any[]) {
         for (
             let i = 0;
-            i < Math.max(views.length, this.previousViewDefination!.length);
+            i <
+            Math.max(viewsContext.length, this.previousViewDefination!.length);
             i++
         ) {
-            if (!this.previousViewDefination![i] && views[i]) {
-                let context = views[i],
+            if (!this.previousViewDefination![i] && viewsContext[i]) {
+                let context = viewsContext[i],
                     embedded = new embeddedView(
                         this.def,
                         Object.setPrototypeOf(
                             context,
                             this[TViewIndex.Context]
                         ),
-                        (this[TViewIndex.Host] as HTMLTemplateElement).content
+                        this[TViewIndex.Host] as HTMLTemplateElement
                     );
-                this.childrenView?.push(embedded);
+                this.childrenView.push(embedded);
                 embedded.attach();
                 embedded.detectChanges();
             }
         }
         if (this.previousViewDefination!.length == 0) {
-            (this[TViewIndex.Host] as HTMLTemplateElement).after!(
-                (
-                    this[TViewIndex.Host] as HTMLTemplateElement
-                ).content.cloneNode(true)
-            );
+            this.childrenView.forEach((embeddedView) => {
+                console.log(embeddedView);
+                (this[TViewIndex.Host] as HTMLTemplateElement).after!(
+                    ...Array.from(embeddedView[TViewIndex.Host]!)?.childNodes
+                );
+            });
         }
     }
 }
@@ -103,7 +101,7 @@ class embeddedView extends TemplateDynamic {
         Object['setPrototypeOf'](this, embeddedView.prototype);
         this[TViewIndex.Context] = context;
         this[TViewIndex.LView] = new LogicView();
-        this[TViewIndex.Host] = host;
+        this[TViewIndex.Host] = host; //viewContainer
     }
     $getDefinition() {
         return this.def;

@@ -417,7 +417,7 @@ function resolveDirective(
                 typeof attributes[AttributeType.dynamicAttrubute][k] ==
                 'function'
             ) {
-                let container = new viewContainer(index, def!, dir);
+                new viewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             }
         } else {
@@ -464,23 +464,21 @@ function linkParentChild(parentIndex: number, index: number) {
         LView = TView[TViewIndex.LView];
     let parentTNode,
         parentNative,
-        currentTNode = TView[index + offset],
-        { directives = [], native } = currentTNode;
+        currentTNode = TView[index + offset];
     if (parentIndex == -1) {
         parentNative = TView[TViewIndex.Host];
     } else {
         parentTNode = TView[parentIndex + offset];
-        parentNative = LView[parentIndex + offset];
+        parentNative =
+            LView[parentIndex + offset].tagName == 'TEMPLATE'
+                ? LView[parentIndex + offset].content
+                : LView[parentIndex + offset];
         parentTNode.children.push(index);
         currentTNode.parent = parentIndex;
     }
     if (!parentTNode || !parentTNode.component) {
         parentNative.append(LView[index + offset]);
     }
-    // 调用指令生命周期:[insert]
-    // for (let context of directives) {
-    //     Hook(context, 'OnInsert', parentNative, native);
-    // }
 }
 function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
