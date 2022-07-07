@@ -9,10 +9,12 @@ import { offset, TemplateDynamic, ViewMode } from '../template';
 import { LogicView } from '../TView/LogicView';
 import { TemplateView } from '../TView/TemplateView';
 
+let count = 0;
 class viewContainer extends TemplateDynamic {
     currentViewDefination?: ViewDefination[];
     previousViewDefination?: ViewDefination[] = [];
     childrenView: embeddedView[] = [];
+    currentTView: TemplateView;
     constructor(
         private index: number,
         private def: ViewDefination,
@@ -20,7 +22,7 @@ class viewContainer extends TemplateDynamic {
     ) {
         super();
         Object['setPrototypeOf'](this, viewContainer.prototype);
-        let currentTView = TViewFns.currentTView(),
+        let currentTView = (this.currentTView = TViewFns.currentTView()),
             currentLView = currentTView[TViewIndex.LView];
         this[TViewIndex.Host] = currentLView[index + offset];
 
@@ -50,7 +52,7 @@ class viewContainer extends TemplateDynamic {
     }
     detectChanges() {
         TViewFns.pushContext(this);
-        this.updateInput();
+        // this.updateInput();
         let views = this[TViewIndex.EmbeddedView].reduce((pre, cur) => {
             return cur.OnInputChanges(pre);
         }, []);
@@ -58,6 +60,8 @@ class viewContainer extends TemplateDynamic {
         TViewFns.popContext();
     }
     diff(viewsContext: any[]) {
+        console.log('viewContainer currentView', this.currentTView);
+
         for (
             let i = 0;
             i <
@@ -74,6 +78,7 @@ class viewContainer extends TemplateDynamic {
                         ),
                         this[TViewIndex.Host] as HTMLTemplateElement
                     );
+                embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
                 this.childrenView.push(embedded);
                 embedded.attach();
                 embedded.detectChanges();
@@ -81,10 +86,12 @@ class viewContainer extends TemplateDynamic {
         }
         if (this.previousViewDefination!.length == 0) {
             this.childrenView.forEach((embeddedView) => {
-                console.log(embeddedView);
                 (this[TViewIndex.Host] as HTMLTemplateElement).after!(
-                    ...Array.from(embeddedView[TViewIndex.Host]!)?.childNodes
+                    ...Array.from(embeddedView[TViewIndex.Host].childNodes)
                 );
+                // document.body.append!(
+                //     ...Array.from(embeddedView[TViewIndex.Host].childNodes)
+                // );
             });
         }
     }
@@ -106,19 +113,34 @@ class embeddedView extends TemplateDynamic {
     $getDefinition() {
         return this.def;
     }
-    contrast() {}
     attach() {
         TViewFns.pushContext(this);
         this.def.template(ViewMode.create, this[TViewIndex.Context]);
-        console.log('embedded attach');
+        const directives = this[TViewIndex.Directives],
+            children = this[TViewIndex.Children];
+        for (let child of children) {
+            let tNode = this[child + offset];
+            tNode['TView'].attach();
+        }
+        let rootElements = this[TViewIndex.RootElements].map(
+            (index) => this[TViewIndex.LView]![index + offset]
+        );
+        console.log('RootElements', rootElements);
+        this[TViewIndex.Host]!.append(...rootElements);
+        console.log('embedded attach', directives, children);
         TViewFns.popContext();
     }
     detectChanges() {
         TViewFns.pushContext(this);
         this.def.template(ViewMode.update, this[TViewIndex.Context]);
-        console.log('embedded detectChanges');
+        const directives = this[TViewIndex.Directives],
+            children = this[TViewIndex.Children];
+        for (let child of children) {
+            let tNode = this[child + offset];
+            tNode['TView'].detectChanges();
+        }
+        console.log('embedded detectChanges', directives, children);
         TViewFns.popContext();
     }
-    inherit() {}
 }
 export { viewContainer, embeddedView };

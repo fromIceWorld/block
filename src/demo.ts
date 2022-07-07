@@ -2,39 +2,27 @@ import { compiler } from '../@compiler/compile/index';
 import { EventEmitter } from '../common/event/EventEmitter';
 import { Component, Inject, Input, Output } from '../decorators/index';
 @Component({
-    selector: `app-child`,
+    selector: `app-demo`,
     template: `
-        <h1>-------------------ChildComponent------start------------------</h1>
-        app-child组件: {{ desc }}
-        <div
-            *forOf="arr"
-            style="width: 67px;
-                    padding: 10px 15px;
-                    border-radius: 6px;
-                    background-color: #72d381"
-            @click="emitValue()"
-        >
-            按钮{{ item }}
-        </div>
-        <app-demo *forOf="arr"></app-demo>
-        <p>parentValue:{{ parentValue }}</p>
-        <slot name="slot1"></slot>
-        <slot></slot>
-        <h1>-------------------ChildComponent-------end-----------------</h1>
+        <h1>-------------------demoComponent-----------start-------------</h1>
+        app-demo组件: {{ desc }}
+        <div *forOf="arrs">[app-demo],li{{ desc }}{{ parentValue }}</div>
+        <p>app-child[parentValue]:{{ parentValue }}</p>
+        <h1>-------------------demoComponent-----------end-------------</h1>
     `,
     styles: '',
 })
-class ChilComponent {
+class demoComponent {
     @Inject(compiler) injectorCompiler: any;
     @Input('value') parentValue?: string;
     @Output('childEmit')
-    arr = [1, 2];
+    arrs = [1, 2];
     emitBuild?: EventEmitter;
-    desc = '[child组件中的插值]';
+    desc = '[demo组件中的插值]';
     constructor() {}
     OnInputChanges(changesObj: any) {
         console.log(
-            '%cChilComponent: %cOnIputChanges',
+            '%cdemoComponent: %cOnIputChanges',
             'color:#bf7313',
             'color:#ff6500',
             changesObj
@@ -42,42 +30,42 @@ class ChilComponent {
     }
     OnInit() {
         console.log(
-            '%cChilComponent: %cOnIinit',
+            '%cdemoComponent: %cOnIinit',
             'color:#bf7313',
             'color:blue'
         );
     }
     OnSlotInit() {
         console.log(
-            '%cChilComponent: %cOnSlotInit',
+            '%cdemoComponent: %cOnSlotInit',
             'color:#bf7313',
             'color:blue'
         );
     }
     OnSlotChecked() {
         console.log(
-            '%cChilComponent: %cOnSlotChecked',
+            '%cdemoComponent: %cOnSlotChecked',
             'color:#bf7313',
             'color:#ff6500'
         );
     }
     OnViewInit() {
         console.log(
-            '%cChilComponent: %cOnViewInit',
+            '%cdemoComponent: %cOnViewInit',
             'color:#bf7313',
             'color:blue'
         );
     }
     OnViewChecked() {
         console.log(
-            '%cChilComponent: %cOnViewChecked',
+            '%cdemoComponent: %cOnViewChecked',
             'color:#bf7313',
             'color:#ff6500'
         );
     }
     OnDestroy() {
         console.log(
-            '%cChilComponent: %cOnDestroy',
+            '%cdemoComponent: %cOnDestroy',
             'color:#bf7313',
             'color:red'
         );
@@ -87,4 +75,4 @@ class ChilComponent {
         this.emitBuild?.emit(this.injectorCompiler);
     }
 }
-export { ChilComponent };
+export { demoComponent };

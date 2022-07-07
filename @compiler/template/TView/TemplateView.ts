@@ -30,10 +30,10 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.TNode] = tNode;
         this[TViewIndex.Host] = host;
         this[TViewIndex.LView] = new LogicView();
-        this[TViewIndex.Parent] = parent;
         this[TViewIndex.Module] = component.hasOwnProperty(componentFromModule)
             ? (component as any)[componentFromModule]
             : null;
+        this[TViewIndex.Parent] = parent;
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
     }

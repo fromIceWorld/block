@@ -36,7 +36,7 @@ class TemplateDynamic extends Array {
     [TViewIndex.InRange] = () => {
         return this[TViewIndex.Module]
             ? this[TViewIndex.Module]['moduleCore'].inRange
-            : [];
+            : this[TViewIndex.Parent]![TViewIndex.InRange];
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
     [TViewIndex.EmbeddedView]: Array<ObjectInterface<any>> = new Array();
