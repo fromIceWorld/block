@@ -1,11 +1,17 @@
 /**
  * 属性选择器,id选择器,class选择器,节点选择器
- * @param selector [name="**"], #id, .classNameme, div
+ * @param selector
+ *  [name="**"]       [name,'**']
+ *  [arr]             [arr, undefined]
+ *  #id               [id, id]
+ *  .classNameme,     [class, classNameme]
+ *  div               [div, null]
+ *
  * @returns
  */
 function resolveSelector(selector: string) {
-    let kv: [string, string | null] = ['', null];
-    let pre = selector[0];
+    let kv: [string, string | null] = ['', null],
+        pre = selector[0];
     if (pre == '#') {
         kv = ['id', selector.substring(1)];
     } else if (pre == '.') {

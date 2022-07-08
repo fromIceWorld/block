@@ -61,7 +61,6 @@ class viewContainer extends TemplateDynamic {
     }
     diff(viewsContext: any[]) {
         console.log('viewContainer currentView', this.currentTView);
-
         for (
             let i = 0;
             i <
@@ -89,9 +88,6 @@ class viewContainer extends TemplateDynamic {
                 (this[TViewIndex.Host] as HTMLTemplateElement).after!(
                     ...Array.from(embeddedView[TViewIndex.Host].childNodes)
                 );
-                // document.body.append!(
-                //     ...Array.from(embeddedView[TViewIndex.Host].childNodes)
-                // );
             });
         }
     }

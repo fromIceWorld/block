@@ -1,5 +1,6 @@
 import { bootstrapView } from '../@compiler/instruction/InstructionContext/index';
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
+import { resolveSelector } from '../common/selector';
 import {
     currentInjector,
     Injector,
@@ -73,6 +74,7 @@ class Application {
             module;
         this.collectProvider(module, $providers);
         for (let declaration of $declarations) {
+            declaration.chooser = resolveSelector(declaration.selector);
             if (declaration.hasOwnProperty(componentFromModule)) {
                 throw Error('组件在多个模块中定义!');
             }

@@ -1,4 +1,3 @@
-import { resolveSelector } from '../../../common/index';
 import { ObjectInterface } from '../../../common/interface';
 import { θd } from '../../../DocumentAPI/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
@@ -73,13 +72,13 @@ function elementStart(tagName: string, index: number) {
     // 解析组件，指令建立抽象节点
     let tNode = resolveNode(tagName, index);
     createNative(tNode, index);
-    resolveDirective(tagName, index);
     // HookDirective('OnInit', tNode.directives);
     // 添加静态属性
     addStaticAttributes(
         tNode.native as Element,
         tNode.attributes[AttributeType.staticAttribute]
     );
+    resolveDirective(tagName, index);
     progressContext(index);
 }
 function createNative(tNode: elementNode, index: number) {
@@ -145,11 +144,13 @@ function updateProperty(index: number) {
     let [
         dynamicStyle,
         dynamicClass,
-        ,
-        ,
         staticAttribute,
         dynamicAttrubute,
         event,
+        reference,
+        structure,
+        ,
+        ,
     ] = attributes;
     if (Object.keys(dynamicAttrubute).length > 0) {
         updateProp(index, dynamicAttrubute, finAttributes);
@@ -397,13 +398,15 @@ function resolveDirective(
 ) {
     let TView = currentTView(),
         native = TView[TViewIndex.LView][index + offset],
-        TNode = TView[offset + index];
-    let { classes, attributes, directives } = TNode;
+        TNode = TView[offset + index] as elementNode;
+    let { attributes, directives } = TNode,
+        structures = attributes[AttributeType.structure];
+    console.log('结构指令', attributes[AttributeType.structure]);
     const InRanges = TView[TViewIndex.InRange]();
     for (let dir of InRanges) {
-        let { selector } = dir as any;
-        let [k, v] = resolveSelector(selector);
+        let [k, v] = dir.chooser;
         if (v == null) {
+            // 组件
             if (k == tagName) {
                 TView[TViewIndex.Children].push(index);
                 TNode.component = dir;
@@ -413,23 +416,21 @@ function resolveDirective(
                     native,
                     TView
                 );
-            } else if (
-                typeof attributes[AttributeType.dynamicAttrubute][k] ==
-                'function'
-            ) {
+            } else if (structures.hasOwnProperty(k)) {
                 new viewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             }
         } else {
-            if (
-                (k == 'class' && Object.keys(classes).join(' ') == v) ||
-                attributes[AttributeType.staticAttribute][k] == v
-            ) {
+            if (native.hasAttribute(k)) {
                 TView[TViewIndex.Directives].add(index);
-                // let context = createDirectivesContext(dir, TNode);
                 let dirInstance = new dir(index, def, TNode);
-                // Hook(context, 'OnInputChanges', context[InputChanges]);
                 directives.push(dirInstance);
+            } else {
+                if (attributes[AttributeType.staticAttribute][k] == v) {
+                    TView[TViewIndex.Directives].add(index);
+                    let dirInstance = new dir(index, def, TNode);
+                    directives.push(dirInstance);
+                }
             }
         }
     }

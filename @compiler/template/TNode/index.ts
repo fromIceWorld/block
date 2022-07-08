@@ -23,8 +23,6 @@ class elementNode extends TNode {
     parent: number = -1;
     TView?: TemplateView | viewContainer | embeddedView;
     finAttributes: ObjectInterface<any>;
-    references;
-    structures;
     constructor(
         tagName: string,
         index: number,
@@ -39,23 +37,21 @@ class elementNode extends TNode {
         super();
         this.tagName = tagName;
         this.index = index;
-        this.attributes[AttributeType.dynamicStyle] = dynamicStyle!.map(
-            (fnConfig) => new Function(...fnConfig)
-        );
-        this.attributes[AttributeType.dynamicClass] = dynamicClasses!.map(
-            (fnConfig) => new Function(...fnConfig)
-        );
-        this.attributes[AttributeType.staticAttribute] = attributes!;
+        this.attributes = [
+            dynamicStyle!.map((fnConfig) => new Function(...fnConfig)),
+            dynamicClasses!.map((fnConfig) => new Function(...fnConfig)),
+            attributes,
+            {},
+            events,
+            references,
+            structures,
+        ];
         this.finAttributes = Object.assign({}, attributes);
-        this.attributes[AttributeType.event] = events;
-        this.attributes[AttributeType.dynamicAttrubute] = Object.create({});
         Object.keys(dynamicAttributes).map((key) => {
             this.attributes[AttributeType.dynamicAttrubute][key] = new Function(
                 ...dynamicAttributes[key]
             );
         });
-        this.references = references;
-        this.structures = structures;
     }
 }
 class textNode extends TNode {

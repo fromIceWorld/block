@@ -161,6 +161,19 @@ OnDestroy: view被销毁时
 - [ ] 多指令串行
 - [ ] 子组件递归
 
+## css选择器
+
+将组件/指令 与template上的节点结合。
+
+```typescript
+`1.` 支持基础选择器 ✔
+	   只解析基础的css selecor，放弃后代选择器及更复杂的选择器
+`2.` 支持queryselector❌
+		当页面中元素过多时，需要查询较复杂
+```
+
+
+
 ## 坑
 
 1. template节点只能[clone、importNode]内联的事件，无法复制`addEventListener`的事件

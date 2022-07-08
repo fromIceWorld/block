@@ -34,7 +34,7 @@ class Instruction {
     template?: Function;
     componentDef?: Function;
     elements: Array<Element> = new Array();
-    attributes: Array<number | string | string[]>[] = new Array();
+    attributes: Array<undefined | number | string | string[]>[] = new Array();
     embeddedViews: any[] = [];
     instructionParams: Set<string> = new Set();
     constructor(addConfiguration: Configuration = {} as Configuration) {
@@ -137,7 +137,7 @@ class Instruction {
         // 嵌入式图
         if (!isResolved && structures.length) {
             this.attributes[this.index] = [
-                AttributeType.dynamicAttrubute,
+                AttributeType.structure,
                 structures[1],
                 [
                     'context',
@@ -309,7 +309,11 @@ class Instruction {
         );
     }
     addReference(refKey: string) {
-        this.attributes[this.index].push(AttributeType.reference, refKey, '');
+        this.attributes[this.index].push(
+            AttributeType.reference,
+            refKey,
+            undefined
+        );
     }
     addDynamicAttrubute(dynamicKey: string, value: string) {
         this.instructionParams.add('updateProperty');
