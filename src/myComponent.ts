@@ -10,12 +10,14 @@ import { Component } from '../decorators/index';
         >
             文本节点:【文本】
             <div
-                *if="exp"
+                *if="displayIf"
                 style="width: 100px;height: 100px;background-color:#b52f4a;"
                 &style="{width: dataWidth}"
                 &name="block"
                 @click="emit($event,123)"
-            ></div>
+            >
+                {{ displayIf }}
+            </div>
         </div>
         <p
             #ref
@@ -32,6 +34,7 @@ import { Component } from '../decorators/index';
 })
 class MyComponent {
     exp = '第一个插值';
+    displayIf: boolean = true;
     exp2 = '第2个插值';
     block = 'com';
     dataWidth = '200px';

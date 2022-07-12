@@ -128,8 +128,10 @@
 ----------------------------------------------
 `1`: 结构性指令 --创建--> viewContainer 
 `2`: view生命周期 --触发--> viewContainer生命周期
-`3`: viewContainer生命周期 --触发--> 指令更改defination
-`4`: 指令更改后的 defination 传递给 viewContainer 作为diff
+`3`: viewContainer生命周期 --触发--> 更新指令的@Input属性
+`4`: 指令更改后的上下文 传递给 viewContainer 作为diff
+
+`diff，比较数据`
 ```
 
 ### TemplateView
@@ -170,6 +172,20 @@ OnDestroy: view被销毁时
 	   只解析基础的css selecor，放弃后代选择器及更复杂的选择器
 `2.` 支持queryselector❌
 		当页面中元素过多时，需要查询较复杂
+```
+
+## template上下文
+
+### 组件
+
+```typescript
+组件实例 -> @Input数据，@Output数据 -> prototype
+```
+
+### 指令
+
+```typescript
+渲染上下文：@Input -> 所在的view上下文
 ```
 
 

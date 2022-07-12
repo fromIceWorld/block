@@ -54,6 +54,7 @@ function updateEmbeddedView(
     index: number,
     view: { attributes: any[]; template: Function }
 ) {
+    updateProperty(index);
     // let TView = currentTView(),
     //     tNode = TView[index + offset],
     //     { attributes, finAttributes } = tNode,
@@ -152,6 +153,9 @@ function updateProperty(index: number) {
         ,
         ,
     ] = attributes;
+    if (Object.keys(structure).length > 0) {
+        updateInputValue(index, structure, finAttributes);
+    }
     if (Object.keys(dynamicAttrubute).length > 0) {
         updateProp(index, dynamicAttrubute, finAttributes);
     }
@@ -179,6 +183,18 @@ function updateProp(
     Object.keys(attributes).forEach((key) => {
         let value = attributes[key](context);
         native.setAttribute(key, value);
+        finAttributes[key] = value;
+    });
+}
+function updateInputValue(
+    index: number,
+    attributes: ObjectInterface<Function>,
+    finAttributes: ObjectInterface<any>
+) {
+    let TView = currentTView(),
+        context = TView[TViewIndex.Context];
+    Object.keys(attributes).forEach((key) => {
+        let value = attributes[key](context);
         finAttributes[key] = value;
     });
 }

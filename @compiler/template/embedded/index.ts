@@ -1,4 +1,10 @@
 import { ConstructortInterface } from '../../../common/interface';
+import {
+    EventChanges,
+    InjectChanges,
+    InputChanges,
+    InputKeys,
+} from '../../../decorators/index';
 import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/TView';
 import {
@@ -6,10 +12,10 @@ import {
     ViewDefination,
 } from '../../instruction/InstructionContext/index';
 import { offset, TemplateDynamic, ViewMode } from '../template';
+import { elementNode } from '../TNode/index';
 import { LogicView } from '../TView/LogicView';
 import { TemplateView } from '../TView/TemplateView';
 
-let count = 0;
 class viewContainer extends TemplateDynamic {
     currentViewDefination?: ViewDefination[];
     previousViewDefination?: ViewDefination[] = [];
@@ -34,30 +40,43 @@ class viewContainer extends TemplateDynamic {
             ? (dir as any)[componentFromModule]
             : null;
         this.injectProviders();
-        this[TViewIndex.Context] = currentTView[TViewIndex.Context];
+        this.createDirectiveContext();
         this[TViewIndex.EmbeddedView].push(new dir());
     }
-    createEmbeddedView() {
-        // let bindView = new Instruction();
-        // bindView.createFunctionBody(this.treeNode);
+    createDirectiveContext(): void {
+        let midContext = Object.create(this.currentTView[TViewIndex.Context]);
+        midContext[InputChanges] = Object.create({});
+        midContext[EventChanges] = Object.create({});
+        midContext[InjectChanges] = Object.create({});
+        this[TViewIndex.Context] = midContext;
     }
     attach() {
-        // TViewFns.pushContext(this);
-        // this.createContext();
-        // let views = this[TViewIndex.EmbeddedView].reduce((pre, cur) => {
-        //     return cur.OnInputChanges(pre);
-        // }, []);
-        // this.diff(views);
-        // TViewFns.popContext();
+        this.updateInput();
+        console.log('viewContainer attach 上下文', this[TViewIndex.Context]);
     }
     detectChanges() {
-        TViewFns.pushContext(this);
-        // this.updateInput();
-        let views = this[TViewIndex.EmbeddedView].reduce((pre, cur) => {
-            return cur.OnInputChanges(pre);
-        }, []);
-        this.diff(views);
-        TViewFns.popContext();
+        this.updateInput();
+        let directiveIns = this[TViewIndex.EmbeddedView][0];
+        let { finAttributes } = this[TViewIndex.TNode] as elementNode;
+        // 更新
+        Object.entries(this[TViewIndex.Class]!.prototype[InputKeys]).forEach(
+            ([key, value]) => {
+                let nextValue = finAttributes[value];
+                if (nextValue !== undefined) {
+                    directiveIns[key] = nextValue;
+                }
+            }
+        );
+        console.log('指令实例：', directiveIns);
+        let views = directiveIns.OnInputChanges(
+            this[TViewIndex.Context][InputChanges]
+        );
+        console.log('指令劫持的上下文：', directiveIns);
+        this.diff(
+            views.map((context) =>
+                Object.setPrototypeOf(context, this[TViewIndex.Context])
+            )
+        );
     }
     diff(viewsContext: any[]) {
         console.log('viewContainer currentView', this.currentTView);
@@ -68,15 +87,11 @@ class viewContainer extends TemplateDynamic {
             i++
         ) {
             if (!this.previousViewDefination![i] && viewsContext[i]) {
-                let context = viewsContext[i],
-                    embedded = new embeddedView(
-                        this.def,
-                        Object.setPrototypeOf(
-                            context,
-                            this[TViewIndex.Context]
-                        ),
-                        this[TViewIndex.Host] as HTMLTemplateElement
-                    );
+                let embedded = new embeddedView(
+                    this.def,
+                    viewsContext[i],
+                    this[TViewIndex.Host] as HTMLTemplateElement
+                );
                 embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
                 this.childrenView.push(embedded);
                 embedded.attach();
@@ -128,6 +143,7 @@ class embeddedView extends TemplateDynamic {
     }
     detectChanges() {
         TViewFns.pushContext(this);
+        this.updateInput();
         this.def.template(ViewMode.update, this[TViewIndex.Context]);
         const directives = this[TViewIndex.Directives],
             children = this[TViewIndex.Children];

@@ -6,17 +6,19 @@ import { Component, Inject, Input, Output } from '../decorators/index';
     template: `
         <h1>-------------------demoComponent-----------start-------------</h1>
         app-demo组件: {{ desc }}
-        <div *forOf="arrs">[app-demo],li{{ desc }}{{ parentValue }}</div>
-        <p>app-child[parentValue]:{{ parentValue }}</p>
+        <div *forOf="arrs">
+            {{ item }}: [app-demo]{{ desc }}, 从上级组件获取的值{{ childValue }}
+        </div>
+        <p>app-child[child组件的 Value]:{{ childValue }}</p>
         <h1>-------------------demoComponent-----------end-------------</h1>
     `,
     styles: '',
 })
 class demoComponent {
     @Inject(compiler) injectorCompiler: any;
-    @Input('value') parentValue?: string;
+    @Input('value') childValue: string;
     @Output('childEmit')
-    arrs = [1, 2];
+    arrs = [1, 2, 3];
     emitBuild?: EventEmitter;
     desc = '[demo组件中的插值]';
     constructor() {}

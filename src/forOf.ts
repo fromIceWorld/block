@@ -1,3 +1,4 @@
+import { viewContainer } from '../@compiler/template/embedded/index';
 import { Input } from '../decorators/index';
 
 class forof {
@@ -8,15 +9,17 @@ class forof {
     @Input('index')
     index: string = 'index';
     static selector = 'forOf';
-    constructor() {}
+    constructor(private container: viewContainer) {}
+
     OnInputChanges(changesObj: any) {
-        console.log('forof指令start', this.arr);
+        console.log('forof指令start', this, this.arr, changesObj);
         let views: Array<any> = [];
-        const { currentValue = [], previousValue = [] } = changesObj;
-        [{ item: 1 }, { item: 2 }].forEach((item: any) => {
-            console.log(item);
-            views?.push(item);
-        });
+        for (let i = 0; i < this.arr.length; i++) {
+            views.push({
+                [this.item]: this.arr[i],
+                [this.index]: i,
+            });
+        }
         return views;
     }
 }

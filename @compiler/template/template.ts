@@ -61,7 +61,7 @@ class TemplateDynamic extends Array {
         }
         let tNode = this[TViewIndex.TNode],
             { finAttributes } = tNode as elementNode,
-            inputKeys = this[TViewIndex.Context][InputKeys] || [],
+            inputKeys = this[TViewIndex.Class]!.prototype[InputKeys] || [],
             inputChanges = this[TViewIndex.Context][InputChanges];
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>

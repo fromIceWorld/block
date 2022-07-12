@@ -8,16 +8,16 @@ import { Component, Inject, Input, Output } from '../decorators/index';
         app-child组件: {{ desc }}
         <div
             *forOf="arr"
-            style="width: 67px;
+            style="width: 100px;
                     padding: 10px 15px;
                     border-radius: 6px;
                     background-color: #72d381"
             @click="emitValue()"
         >
-            按钮{{ item }}
+            按钮: {{ item }}
         </div>
-        <app-demo *forOf="arr"></app-demo>
-        <p>parentValue:{{ parentValue }}</p>
+        <app-demo &value="parentValue" *forOf="arr"></app-demo>
+        <p>my-component value:{{ parentValue }}</p>
         <slot name="slot1"></slot>
         <slot></slot>
         <h1>-------------------ChildComponent-------end-----------------</h1>
@@ -28,7 +28,7 @@ class ChilComponent {
     @Inject(compiler) injectorCompiler: any;
     @Input('value') parentValue?: string;
     @Output('childEmit')
-    arr = [1, 2];
+    arr = ['first', 'second'];
     emitBuild?: EventEmitter;
     desc = '[child组件中的插值]';
     constructor() {}

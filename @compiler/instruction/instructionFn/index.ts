@@ -50,6 +50,7 @@ class Instruction {
         this.updateFn = ``;
         this.elements = [];
         this.attributes = [];
+        this.embeddedViews = [];
         this.instructionParams.clear();
     }
     /**
@@ -142,7 +143,7 @@ class Instruction {
                 [
                     'context',
                     `with(context){
-                        return '${structures[2]}'
+                        return ${structures[2]}
                 }`,
                 ],
             ];
@@ -212,7 +213,7 @@ class Instruction {
         let hasInterpolation = false,
             [start, end] = this.configuration.interpolationSyntax,
             interpolationRegExp = new RegExp(
-                `${start}\\s*[a-zA-Z][a-zA-Z0-9]*\\s*${end}`,
+                `${start}\\s*[a-zA-Z0-9!.]*\\s*${end}`,
                 'g'
             ),
             { content } = element;
