@@ -22,7 +22,6 @@ class compiler {
     transform(component: any) {
         let { template } = component;
         let tokenTree = this.parse.parse(template);
-        console.log('解析template生成的tokenTree', tokenTree);
         this.instruction.createFactory(tokenTree as any);
         let paramsString = Array.from(this.instruction.instructionParams),
             paramsFns = paramsString.map((key) => this.instructionContext[key]);

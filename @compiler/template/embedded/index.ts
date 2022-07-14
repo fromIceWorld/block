@@ -43,6 +43,10 @@ class viewContainer extends TemplateDynamic {
         this.createDirectiveContext();
         this[TViewIndex.EmbeddedView].push(new dir());
     }
+    splitTNode() {
+        let tNode = this.currentTView[this.index + offset],
+            { finAttributes } = tNode;
+    }
     createDirectiveContext(): void {
         let midContext = Object.create(this.currentTView[TViewIndex.Context]);
         midContext[InputChanges] = Object.create({});
@@ -52,7 +56,6 @@ class viewContainer extends TemplateDynamic {
     }
     attach() {
         this.updateInput();
-        console.log('viewContainer attach 上下文', this[TViewIndex.Context]);
     }
     detectChanges() {
         this.updateInput();

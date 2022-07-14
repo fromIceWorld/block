@@ -29,7 +29,6 @@ function PlatformBrowserDynamic(
     let platFomrInjector = Injector.create(platFormProviders(extraProvides));
     let platformRef = createPlatform(platFomrInjector);
     (window as any)['platformRef'] = platformRef;
-    console.log(platformRef);
     return platformRef;
 }
 

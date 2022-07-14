@@ -38,11 +38,15 @@ class elementNode extends TNode {
         this.tagName = tagName;
         this.index = index;
         this.attributes = [
-            dynamicStyle!.map((fnConfig) => new Function(...fnConfig)),
-            dynamicClasses!.map((fnConfig) => new Function(...fnConfig)),
+            Object.values(dynamicStyle)!.map(
+                (fnConfig) => new Function(...fnConfig)
+            ),
+            Object.values(dynamicClasses)!.map(
+                (fnConfig) => new Function(...fnConfig)
+            ),
             attributes,
-            {},
             events,
+            {},
             references,
             {},
         ];

@@ -146,12 +146,10 @@ function updateProperty(index: number) {
         dynamicStyle,
         dynamicClass,
         staticAttribute,
-        dynamicAttrubute,
         event,
+        dynamicAttrubute,
         reference,
         structure,
-        ,
-        ,
     ] = attributes;
     if (Object.keys(structure).length > 0) {
         updateInputValue(index, structure, finAttributes);
@@ -324,22 +322,23 @@ function listener(eventName: string, callback: Function, index: number) {
  * @return tNode 节点抽象数据
  */
 function resolveNode(tagName: string, index: number) {
-    let TView = currentTView(),
-        {
+    const TView = currentTView(),
+        { attributes } = currentTView().$getDefinition() as any,
+        [
             dynamicStyle,
             dynamicClasses,
-            attributes,
+            mergeAttributes,
             events,
             dynamicAttributes,
             references,
             structures,
-        } = resolveAttributes(index);
+        ] = attributes[index];
     let tNode = new elementNode(
         tagName,
         index,
         dynamicStyle,
         dynamicClasses,
-        attributes,
+        mergeAttributes,
         events,
         dynamicAttributes,
         references,
@@ -355,42 +354,7 @@ function resolveNode(tagName: string, index: number) {
  */
 function resolveAttributes(index: number) {
     const { attributes } = currentTView().$getDefinition() as any;
-    let dynamicStyle = new Array(),
-        dynamicClasses = new Array(),
-        mergeAttributes = Object.create({}),
-        events = Object.create({}),
-        dynamicAttributes = Object.create({}),
-        references = Object.create({}),
-        structures = Object.create({});
-    for (let i = 0; attributes[index] && i < attributes[index].length; ) {
-        let type = attributes[index][i],
-            key = attributes[index][i + 1],
-            value = attributes[index][i + 2];
-        switch (type) {
-            case AttributeType.dynamicClass:
-                dynamicClasses.push(value);
-                break;
-            case AttributeType.dynamicStyle:
-                dynamicStyle.push(value);
-                break;
-            case AttributeType.event:
-                events[key] ? events[key].push(value) : (events[key] = [value]);
-                break;
-            case AttributeType.staticAttribute:
-                mergeAttributes[key] = value;
-                break;
-            case AttributeType.reference:
-                references[key] = value;
-                break;
-            case AttributeType.structure:
-                structures[key] = value;
-                break;
-            default:
-                dynamicAttributes[key] = value;
-                break;
-        }
-        i += 3;
-    }
+
     return {
         dynamicStyle,
         dynamicClasses,
@@ -415,9 +379,8 @@ function resolveDirective(
     let TView = currentTView(),
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index] as elementNode;
-    let { attributes, directives } = TNode,
+    let { attributes, directives, finAttributes } = TNode,
         structures = attributes[AttributeType.structure];
-    console.log('结构指令', attributes[AttributeType.structure]);
     const InRanges = TView[TViewIndex.InRange]();
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
@@ -433,6 +396,8 @@ function resolveDirective(
                     TView
                 );
             } else if (structures.hasOwnProperty(k)) {
+                // finAttributes[k] = structures[k];
+                delete structures[k];
                 new viewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             }

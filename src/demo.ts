@@ -7,9 +7,10 @@ import { Component, Inject, Input, Output } from '../decorators/index';
         <h1>-------------------demoComponent-----------start-------------</h1>
         app-demo组件: {{ desc }}
         <div *forOf="arrs">
-            {{ item }}: [app-demo]{{ desc }}, 从上级组件获取的值{{ childValue }}
+            <span *if="desc"> {{ item }}: [app-demo]{{ desc }}, </span>
+            从上级组件获取的值{{ childValue }}
         </div>
-        <p>app-child[child组件的 Value]:{{ childValue }}</p>
+        <p *if="desc">app-child[child组件的 Value]:{{ childValue }}</p>
         <h1>-------------------demoComponent-----------end-------------</h1>
     `,
     styles: '',
@@ -18,7 +19,7 @@ class demoComponent {
     @Inject(compiler) injectorCompiler: any;
     @Input('value') childValue: string;
     @Output('childEmit')
-    arrs = [1, 2, 3];
+    arrs = [0, 1, 2, 3];
     emitBuild?: EventEmitter;
     desc = '[demo组件中的插值]';
     constructor() {}

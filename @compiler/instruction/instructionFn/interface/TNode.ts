@@ -1,3 +1,4 @@
+import { ObjectInterface } from '../../../../common/interface';
 import { Position } from './position';
 interface CommentTNode {
     content: string;
@@ -13,6 +14,7 @@ interface ElementTNode {
     type: number;
     startPosition: Position;
     endPosition: Position;
+    resolvedAttributes: Array<ObjectInterface<string | Array<string>>>;
 }
 interface TextTNode {
     content: string;

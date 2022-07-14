@@ -14,6 +14,9 @@ class forof {
     OnInputChanges(changesObj: any) {
         console.log('forof指令start', this, this.arr, changesObj);
         let views: Array<any> = [];
+        if (!this.arr) {
+            return views;
+        }
         for (let i = 0; i < this.arr.length; i++) {
             views.push({
                 [this.item]: this.arr[i],

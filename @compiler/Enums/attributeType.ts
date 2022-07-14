@@ -1,12 +1,13 @@
 enum AttributeType {
     dynamicStyle,
     dynamicClass,
-    staticAttribute,
     dynamicAttrubute,
+    staticAttribute,
     event,
     reference,
     structure,
     style,
     class,
+    length,
 }
 export { AttributeType };

@@ -1,3 +1,5 @@
+import { copy } from '../../../common/copy';
+import { ObjectInterface } from '../../../common/interface';
 import { AttributeType, elementType } from '../../Enums/index';
 import { TViewFns } from '../InstructionContext/index';
 import {
@@ -34,7 +36,7 @@ class Instruction {
     template?: Function;
     componentDef?: Function;
     elements: Array<Element> = new Array();
-    attributes: Array<undefined | number | string | string[]>[] = new Array();
+    attributes: Array<ObjectInterface<string | Array<string>>>[] = new Array();
     embeddedViews: any[] = [];
     instructionParams: Set<string> = new Set();
     constructor(addConfiguration: Configuration = {} as Configuration) {
@@ -130,32 +132,37 @@ class Instruction {
         const {
             tagName,
             attributes,
-            closed,
+            resolvedAttributes,
             children = [],
-            isResolved,
         } = element;
-        const structures = this.resolveStructure(element);
+        if (!resolvedAttributes) {
+            this.resolveAttributes(attributes);
+            element.resolvedAttributes = this.attributes[this.index];
+        } else {
+            this.attributes[this.index] = element.resolvedAttributes;
+        }
+        let [
+            dynamicStyle,
+            dynamicClasses,
+            mergeAttributes,
+            events,
+            dynamicAttributes,
+            references,
+            structures,
+        ] = element.resolvedAttributes;
         // 嵌入式图
-        if (!isResolved && structures.length) {
-            this.attributes[this.index] = [
-                AttributeType.structure,
-                structures[1],
-                [
-                    'context',
-                    `with(context){
-                        return ${structures[2]}
-                }`,
-                ],
-            ];
-            this.resolveEmbedded(element);
-            this.resolveTNodes([element]);
+        if (Object.keys(structures).length) {
+            let copyEle = copy(element);
+            copyEle.resolvedAttributes[AttributeType.structure] = {};
+            this.resolveEmbedded(copyEle);
+            // 删除结构指令
+            // this.resolveTNodes([element]);
             this.createFn += `
                         createEmbeddedViewEnd('template');`;
         } else {
             this.instructionParams.add('elementStart');
             this.createFn += `
                         elementStart('${tagName}', ${this.index});`;
-            this.resolveAttributes(attributes);
             this.index++;
             this.resolveTNodes(children);
             this.closeElement(element);
@@ -191,15 +198,13 @@ class Instruction {
                         createEmbeddedViewStart('template', ${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
         this.updateFn += `
                         updateEmbeddedView(${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
-        element.isResolved = true;
         let instructionIns = new Instruction();
         instructionIns.createFactory([element]);
         let paramsString = Array.from(instructionIns.instructionParams),
-            paramsFns = paramsString.map((key) => TViewFns[key]);
-        let componentDef = instructionIns.componentDef!(...paramsFns);
-        this.embeddedViews.push(componentDef);
-        console.log(componentDef);
+            paramsFns = paramsString.map((key) => TViewFns[key]),
+            componentDef = instructionIns.componentDef!(...paramsFns);
         // 为嵌入视图生成新的view
+        this.embeddedViews.push(componentDef);
         this.index++;
     }
     closeElement(element: ElementTNode) {
@@ -247,74 +252,127 @@ class Instruction {
         this.index++;
     }
     resolveAttributes(attributes: string[]) {
-        this.attributes[this.index] = [];
-        let structures: string[] = [],
-            attributesArray = new Array();
-        let hasDynamicAtribute = false,
-            { addAttributeMark, addEventMark, structureMark, referenceMark } =
-                this.configuration;
+        this.attributes[this.index] = Array.from(
+            new Array(AttributeType.length),
+            () => Object.create(null)
+        );
+        let [
+            dynamicStyle,
+            dynamicClasses,
+            mergeAttributes,
+            events,
+            dynamicAttributes,
+            references,
+            structures,
+        ] = this.attributes[this.index];
+        let { addAttributeMark, addEventMark, structureMark, referenceMark } =
+            this.configuration;
         for (let i = 0; i < attributes.length; ) {
             let prefix = attributes[i][0];
             if (attributes[i + 1] == '=') {
                 switch (prefix) {
                     case addAttributeMark:
-                        hasDynamicAtribute = true;
-                        this.addDynamicAttrubute(
-                            attributes[i].slice(1),
-                            attributes[i + 2]
-                        );
+                        let [styles, classes, attrs] =
+                            this.extractDynamiceAttributes(
+                                attributes[i].slice(1),
+                                attributes[i + 2]
+                            );
+                        Object.assign(dynamicStyle, styles);
+                        Object.assign(dynamicClasses, classes);
+                        Object.assign(dynamicAttributes, attrs);
                         break;
                     case structureMark:
-                        hasDynamicAtribute = true;
-                        structures.push(
-                            attributes[i].slice(1),
-                            attributes[i + 2]
-                        );
+                        structures[attributes[i].slice(1)] = attributes[i + 2];
                         break;
                     case addEventMark:
-                        this.addListener(
-                            attributes[i].slice(1),
-                            attributes[i + 2]
-                        );
+                        events[attributes[i].slice(1)] = attributes[i + 2];
                         break;
                     default:
-                        this.addStaticAttrubute(
-                            attributes[i],
-                            attributes[i + 2]
-                        );
+                        mergeAttributes[attributes[i]] = attributes[i + 2];
                         break;
                 }
                 i += 3;
             } else {
                 switch (prefix) {
                     case referenceMark:
-                        this.addReference(attributes[i].slice(1));
+                        references[attributes[i]] = '';
                         break;
                     default:
-                        this.addStaticAttrubute(attributes[i], '');
+                        mergeAttributes[attributes[i]] = '';
                         break;
                 }
                 i++;
             }
         }
-        if (hasDynamicAtribute) {
-            this.updateProperty();
+        // for (let i = 0; i < attributes.length; ) {
+        //     let prefix = attributes[i][0];
+        //     if (attributes[i + 1] == '=') {
+        //         switch (prefix) {
+        //             case addAttributeMark:
+        //                 hasDynamicAtribute = true;
+        //                 this.addDynamicAttrubute(
+        //                     attributes[i].slice(1),
+        //                     attributes[i + 2]
+        //                 );
+        //                 break;
+        //             case structureMark:
+        //                 hasDynamicAtribute = true;
+        //                 structures.push(
+        //                     attributes[i].slice(1),
+        //                     attributes[i + 2]
+        //                 );
+        //                 break;
+        //             case addEventMark:
+        //                 this.addListener(
+        //                     attributes[i].slice(1),
+        //                     attributes[i + 2]
+        //                 );
+        //                 break;
+        //             default:
+        //                 this.addStaticAttrubute(
+        //                     attributes[i],
+        //                     attributes[i + 2]
+        //                 );
+        //                 break;
+        //         }
+        //         i += 3;
+        //     } else {
+        //         switch (prefix) {
+        //             case referenceMark:
+        //                 this.addReference(attributes[i].slice(1));
+        //                 break;
+        //             default:
+        //                 this.addStaticAttrubute(attributes[i], '');
+        //                 break;
+        //         }
+        //         i++;
+        //     }
+        // }
+        // if (hasDynamicAtribute) {
+        //     this.updateProperty();
+        // }
+    }
+    extractDynamiceAttributes(dynamicKey: string, value: string) {
+        let result: Array<ObjectInterface<string[]>> = [{}, {}, {}],
+            contextValue = [
+                'context',
+                `with(context){
+                    return ${value}
+                }`,
+            ];
+        switch (dynamicKey) {
+            case 'style':
+                result[AttributeType.dynamicStyle][dynamicKey] = contextValue;
+                break;
+            case 'class':
+                result[AttributeType.dynamicClass][dynamicKey] = contextValue;
+                break;
+            default:
+                result[AttributeType.dynamicAttrubute][dynamicKey] =
+                    contextValue;
+                break;
         }
-        return { structures, attributesArray };
-    }
-    addStaticAttrubute(key: string, value: string) {
-        this.attributes[this.index].push(
-            AttributeType.staticAttribute,
-            key,
-            value
-        );
-    }
-    addReference(refKey: string) {
-        this.attributes[this.index].push(
-            AttributeType.reference,
-            refKey,
-            undefined
-        );
+        return result;
     }
     addDynamicAttrubute(dynamicKey: string, value: string) {
         this.instructionParams.add('updateProperty');
@@ -336,7 +394,6 @@ class Instruction {
                 type = AttributeType.dynamicAttrubute;
                 break;
         }
-        this.attributes[this.index].push(type, dynamicKey, contextValue);
     }
     updateProperty() {
         this.instructionParams.add('updateProperty');
@@ -345,11 +402,6 @@ class Instruction {
     }
     addListener(eventName: string, callback: string) {
         this.instructionParams.add('listener');
-        this.attributes[this.index].push(
-            AttributeType.event,
-            eventName,
-            callback
-        );
         let [fn, params] = callback.replace(/[()]/g, ' ').split(' ');
         this.createFn += `
                         listener('${eventName}',function($event){
