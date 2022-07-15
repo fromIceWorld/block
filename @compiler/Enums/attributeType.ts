@@ -1,9 +1,9 @@
 enum AttributeType {
     dynamicStyle,
     dynamicClass,
-    dynamicAttrubute,
     staticAttribute,
     event,
+    dynamicAttrubute,
     reference,
     structure,
     style,

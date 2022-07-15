@@ -54,9 +54,7 @@ class viewContainer extends TemplateDynamic {
         midContext[InjectChanges] = Object.create({});
         this[TViewIndex.Context] = midContext;
     }
-    attach() {
-        this.updateInput();
-    }
+    attach() {}
     detectChanges() {
         this.updateInput();
         let directiveIns = this[TViewIndex.EmbeddedView][0];

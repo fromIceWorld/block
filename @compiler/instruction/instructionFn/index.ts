@@ -141,6 +141,7 @@ class Instruction {
         } else {
             this.attributes[this.index] = element.resolvedAttributes;
         }
+        this.attemptUpdate();
         let [
             dynamicStyle,
             dynamicClasses,
@@ -154,11 +155,19 @@ class Instruction {
         if (Object.keys(structures).length) {
             let copyEle = copy(element);
             copyEle.resolvedAttributes[AttributeType.structure] = {};
+
+            Object.entries(structures).forEach(([key, value]) => {
+                structures[key.slice(1)] = value;
+                delete structures[key];
+            });
             this.resolveEmbedded(copyEle);
             // 删除结构指令
             // this.resolveTNodes([element]);
             this.createFn += `
-                        createEmbeddedViewEnd('template');`;
+                        embeddedViewEnd('template');`;
+            this.instructionParams.add('updateProperty');
+            this.updateFn += `
+                        updateProperty(${this.index});`;
         } else {
             this.instructionParams.add('elementStart');
             this.createFn += `
@@ -191,13 +200,10 @@ class Instruction {
         return structures;
     }
     resolveEmbedded(element: ElementTNode) {
-        this.instructionParams.add('createEmbeddedViewStart');
-        this.instructionParams.add('createEmbeddedViewEnd');
-        this.instructionParams.add('updateEmbeddedView');
+        this.instructionParams.add('embeddedViewStart');
+        this.instructionParams.add('embeddedViewEnd');
         this.createFn += `
-                        createEmbeddedViewStart('template', ${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
-        this.updateFn += `
-                        updateEmbeddedView(${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
+                        embeddedViewStart('template', ${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
         let instructionIns = new Instruction();
         instructionIns.createFactory([element]);
         let paramsString = Array.from(instructionIns.instructionParams),
@@ -272,7 +278,7 @@ class Instruction {
             if (attributes[i + 1] == '=') {
                 switch (prefix) {
                     case addAttributeMark:
-                        let [styles, classes, attrs] =
+                        let [styles, classes, , , attrs] =
                             this.extractDynamiceAttributes(
                                 attributes[i].slice(1),
                                 attributes[i + 2]
@@ -282,7 +288,12 @@ class Instruction {
                         Object.assign(dynamicAttributes, attrs);
                         break;
                     case structureMark:
-                        structures[attributes[i].slice(1)] = attributes[i + 2];
+                        structures[attributes[i]] = [
+                            'context',
+                            `with(context){
+                                return ${attributes[i + 2]}
+                            }`,
+                        ];
                         break;
                     case addEventMark:
                         events[attributes[i].slice(1)] = attributes[i + 2];
@@ -304,56 +315,28 @@ class Instruction {
                 i++;
             }
         }
-        // for (let i = 0; i < attributes.length; ) {
-        //     let prefix = attributes[i][0];
-        //     if (attributes[i + 1] == '=') {
-        //         switch (prefix) {
-        //             case addAttributeMark:
-        //                 hasDynamicAtribute = true;
-        //                 this.addDynamicAttrubute(
-        //                     attributes[i].slice(1),
-        //                     attributes[i + 2]
-        //                 );
-        //                 break;
-        //             case structureMark:
-        //                 hasDynamicAtribute = true;
-        //                 structures.push(
-        //                     attributes[i].slice(1),
-        //                     attributes[i + 2]
-        //                 );
-        //                 break;
-        //             case addEventMark:
-        //                 this.addListener(
-        //                     attributes[i].slice(1),
-        //                     attributes[i + 2]
-        //                 );
-        //                 break;
-        //             default:
-        //                 this.addStaticAttrubute(
-        //                     attributes[i],
-        //                     attributes[i + 2]
-        //                 );
-        //                 break;
-        //         }
-        //         i += 3;
-        //     } else {
-        //         switch (prefix) {
-        //             case referenceMark:
-        //                 this.addReference(attributes[i].slice(1));
-        //                 break;
-        //             default:
-        //                 this.addStaticAttrubute(attributes[i], '');
-        //                 break;
-        //         }
-        //         i++;
-        //     }
-        // }
-        // if (hasDynamicAtribute) {
-        //     this.updateProperty();
-        // }
+    }
+    attemptUpdate() {
+        let [
+            dynamicStyle,
+            dynamicClasses,
+            mergeAttributes,
+            events,
+            dynamicAttributes,
+            references,
+            structures,
+        ] = this.attributes[this.index];
+        if (
+            Object.keys(dynamicStyle).length > 0 ||
+            Object.keys(dynamicClasses).length > 0 ||
+            Object.keys(dynamicAttributes).length > 0 ||
+            Object.keys(structures).length > 0
+        ) {
+            this.updateProperty();
+        }
     }
     extractDynamiceAttributes(dynamicKey: string, value: string) {
-        let result: Array<ObjectInterface<string[]>> = [{}, {}, {}],
+        let result: Array<ObjectInterface<string[]>> = [{}, {}, {}, {}, {}],
             contextValue = [
                 'context',
                 `with(context){
@@ -373,27 +356,6 @@ class Instruction {
                 break;
         }
         return result;
-    }
-    addDynamicAttrubute(dynamicKey: string, value: string) {
-        this.instructionParams.add('updateProperty');
-        let type: number,
-            contextValue = [
-                'context',
-                `with(context){
-                    return ${value}
-                }`,
-            ];
-        switch (dynamicKey) {
-            case 'style':
-                type = AttributeType.dynamicStyle;
-                break;
-            case 'class':
-                type = AttributeType.dynamicClass;
-                break;
-            default:
-                type = AttributeType.dynamicAttrubute;
-                break;
-        }
     }
     updateProperty() {
         this.instructionParams.add('updateProperty');

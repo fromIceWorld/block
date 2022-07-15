@@ -36,7 +36,7 @@ function popContext() {
         preTView = tView[TViewIndex.Parent]!;
     setCurrentTView(preTView);
 }
-function createEmbeddedViewStart(
+function embeddedViewStart(
     tagName: string,
     index: number,
     def: ViewDefination
@@ -47,22 +47,10 @@ function createEmbeddedViewStart(
     resolveDirective(tagName, index, def);
     progressContext(index);
 }
-function createEmbeddedViewEnd(tagName: string) {
+function embeddedViewEnd(tagName: string) {
     elementEnd(tagName);
 }
-function updateEmbeddedView(
-    index: number,
-    view: { attributes: any[]; template: Function }
-) {
-    updateProperty(index);
-    // let TView = currentTView(),
-    //     tNode = TView[index + offset],
-    //     { attributes, finAttributes } = tNode,
-    //     dynamicAttrubute = attributes[AttributeType.dynamicAttrubute];
-    // updateProp(index, dynamicAttrubute, finAttributes);
-    // // TView[index + offset].attach();
-    // console.log('更新嵌入视图', TView, view);
-}
+
 /**
  * 建立真实DOM元素
  *
@@ -153,15 +141,17 @@ function updateProperty(index: number) {
     ] = attributes;
     if (Object.keys(structure).length > 0) {
         updateInputValue(index, structure, finAttributes);
-    }
-    if (Object.keys(dynamicAttrubute).length > 0) {
-        updateProp(index, dynamicAttrubute, finAttributes);
-    }
-    if (dynamicStyle.length > 0) {
-        updateStyle(index, dynamicStyle, finAttributes);
-    }
-    if (dynamicClass.length > 0) {
-        updateClass(index, dynamicClass, finAttributes);
+    } else {
+        // 结构性指令生成template节点，不应该添加属性
+        if (Object.keys(dynamicAttrubute).length > 0) {
+            updateProp(index, dynamicAttrubute, finAttributes);
+        }
+        if (dynamicStyle.length > 0) {
+            updateStyle(index, dynamicStyle, finAttributes);
+        }
+        if (dynamicClass.length > 0) {
+            updateClass(index, dynamicClass, finAttributes);
+        }
     }
 }
 /**
@@ -347,24 +337,6 @@ function resolveNode(tagName: string, index: number) {
     TView[offset + index] = tNode;
     return tNode;
 }
-/**
- * 解析节点上的属性
- *
- * @param index 节点索引
- */
-function resolveAttributes(index: number) {
-    const { attributes } = currentTView().$getDefinition() as any;
-
-    return {
-        dynamicStyle,
-        dynamicClasses,
-        attributes: mergeAttributes,
-        events,
-        dynamicAttributes,
-        references,
-        structures,
-    };
-}
 // TODO: 动态属性匹配指令情况
 /**
  * 解析节点上的组件/指令
@@ -397,7 +369,7 @@ function resolveDirective(
                 );
             } else if (structures.hasOwnProperty(k)) {
                 // finAttributes[k] = structures[k];
-                delete structures[k];
+                // delete structures[k];
                 new viewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             }
@@ -480,8 +452,7 @@ const TViewFns: ObjectInterface<Function> = {
     setCurrentTView,
     pushContext,
     popContext,
-    createEmbeddedViewStart,
-    createEmbeddedViewEnd,
-    updateEmbeddedView,
+    embeddedViewStart,
+    embeddedViewEnd,
 };
 export { TViewFns, bootstrapView, ViewDefination };
