@@ -19,10 +19,6 @@ import { Component } from '../decorators/index';
                 {{ displayIf }}
             </div>
         </div>
-        <app-child &value="block" @childEmit="console($event)">
-            <span>default slot</span>
-            <span slot="slot1">slot1</span>
-        </app-child>
         <p
             #ref
             class="forP bindClass2"
@@ -30,6 +26,10 @@ import { Component } from '../decorators/index';
         >
             我是:{{ exp }},{{ exp2 }}
         </p>
+        <app-child &value="block" @childEmit="console($event)">
+            <span>default slot</span>
+            <span slot="slot1">slot1</span>
+        </app-child>
 
         <!-- 注释信息-->`,
 })

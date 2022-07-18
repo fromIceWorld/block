@@ -69,30 +69,49 @@ class Instruction {
         this.createComponentDef();
     }
     createComponentDef() {
-        let componentDef = (this.componentDef = new Function(
+        console.log('渲染的def：', this.embeddedViews);
+        console.log('渲染的def.map：');
+        this.componentDef = new Function(
             ...Array.from(this.instructionParams),
             `
-            let embeddedViews = [${
-                this.embeddedViews.length
-                    ? this.embeddedViews
-                          .map((obj) => {
-                              let { attributes, template } = obj;
-                              return `{
-                                    attributes:${JSON.stringify(attributes)},
-                                    template:${template.toString()}
-                                  }`;
-                          })
-                          .join(',\n')
-                    : '""'
-            }];
             let attributes = ${JSON.stringify(this.attributes)};
             return {
+                embeddedViews:[${
+                    this.embeddedViews.length
+                        ? this.embeddedViews
+                              .map((obj) => {
+                                  let { embeddedViews, attributes, template } =
+                                      obj;
+                                  return `{
+                        embeddedViews:[${
+                            embeddedViews.length
+                                ? embeddedViews
+                                      .map((def) => {
+                                          return `
+                                          {
+                                            embeddedViews: ${JSON.stringify(
+                                                def.embeddedViews
+                                            )},
+                                            attributes: ${JSON.stringify(
+                                                def.attributes
+                                            )},
+                                            template: ${def.template.toString()},
+                                        }`;
+                                      })
+                                      .join(',\n')
+                                : ''
+                        }],
+                        attributes:${JSON.stringify(attributes)},
+                        template:${template.toString()}
+                      }`;
+                              })
+                              .join(',\n')
+                        : ''
+                }],
                 attributes,
                 template:${this.template}
-            }
-        `
-        ));
-        console.log(componentDef);
+            }`
+        );
     }
     createTemplateFn() {
         this.template = new Function(
@@ -139,6 +158,7 @@ class Instruction {
             this.resolveAttributes(attributes);
             element.resolvedAttributes = this.attributes[this.index];
         } else {
+            console.log(element.resolvedAttributes);
             this.attributes[this.index] = element.resolvedAttributes;
         }
         this.attemptUpdate();
@@ -163,11 +183,12 @@ class Instruction {
             this.resolveEmbedded(copyEle);
             // 删除结构指令
             // this.resolveTNodes([element]);
+            // this.instructionParams.add('updateProperty');
+            // this.updateFn += `
+            //             updateProperty(${this.index});`;
             this.createFn += `
                         embeddedViewEnd('template');`;
-            this.instructionParams.add('updateProperty');
-            this.updateFn += `
-                        updateProperty(${this.index});`;
+            this.index++;
         } else {
             this.instructionParams.add('elementStart');
             this.createFn += `
@@ -203,15 +224,15 @@ class Instruction {
         this.instructionParams.add('embeddedViewStart');
         this.instructionParams.add('embeddedViewEnd');
         this.createFn += `
-                        embeddedViewStart('template', ${this.index}, embeddedViews[${this.embeddedViews.length}]);`;
+                        embeddedViewStart('template', ${this.index}, this.embeddedViews[${this.embeddedViews.length}]);`;
         let instructionIns = new Instruction();
         instructionIns.createFactory([element]);
         let paramsString = Array.from(instructionIns.instructionParams),
             paramsFns = paramsString.map((key) => TViewFns[key]),
             componentDef = instructionIns.componentDef!(...paramsFns);
         // 为嵌入视图生成新的view
+        console.log('递归的指令', componentDef, componentDef.embeddedViews);
         this.embeddedViews.push(componentDef);
-        this.index++;
     }
     closeElement(element: ElementTNode) {
         this.instructionParams.add('elementEnd');
