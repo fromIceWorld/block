@@ -158,7 +158,6 @@ class Instruction {
             this.resolveAttributes(attributes);
             element.resolvedAttributes = this.attributes[this.index];
         } else {
-            console.log(element.resolvedAttributes);
             this.attributes[this.index] = element.resolvedAttributes;
         }
         this.attemptUpdate();
@@ -175,17 +174,11 @@ class Instruction {
         if (Object.keys(structures).length) {
             let copyEle = copy(element);
             copyEle.resolvedAttributes[AttributeType.structure] = {};
-
             Object.entries(structures).forEach(([key, value]) => {
                 structures[key.slice(1)] = value;
                 delete structures[key];
             });
             this.resolveEmbedded(copyEle);
-            // 删除结构指令
-            // this.resolveTNodes([element]);
-            // this.instructionParams.add('updateProperty');
-            // this.updateFn += `
-            //             updateProperty(${this.index});`;
             this.createFn += `
                         embeddedViewEnd('template');`;
             this.index++;
@@ -197,28 +190,6 @@ class Instruction {
             this.resolveTNodes(children);
             this.closeElement(element);
         }
-    }
-    resolveStructure(element: ElementTNode): Array<string | number> {
-        const { attributes } = element;
-        let structures: Array<string | number> = [],
-            { structureMark } = this.configuration;
-        for (let i = attributes.length - 1; i > 1; ) {
-            if (
-                attributes[i - 1] == '=' &&
-                attributes[i - 2].startsWith(structureMark!)
-            ) {
-                structures.push(
-                    AttributeType.structure,
-                    attributes[i - 2].slice(1),
-                    attributes[i]
-                );
-                element.attributes.splice(i - 2, 3);
-                i -= 3;
-            } else {
-                i--;
-            }
-        }
-        return structures;
     }
     resolveEmbedded(element: ElementTNode) {
         this.instructionParams.add('embeddedViewStart');
@@ -257,7 +228,8 @@ class Instruction {
                     `' + ctx["` +
                     interpolation
                         .slice(start.length, interpolation.length - end.length)
-                        .trim() +
+                        .trim()
+                        .replace('.', '"]["') +
                     `"] + '`
                 );
             }

@@ -254,6 +254,7 @@ function updateStyle(
  * @param content 文本
  */
 function creatText(index: number, content: string) {
+    debugger;
     let TView = currentTView(),
         LView = TView[TViewIndex.LView],
         text = θd.createTextNode(content);
@@ -368,8 +369,7 @@ function resolveDirective(
                     TView
                 );
             } else if (structures.hasOwnProperty(k)) {
-                // finAttributes[k] = structures[k];
-                // delete structures[k];
+                // TODO:多结构性指令作用于同一个节点
                 new viewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             }

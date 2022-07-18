@@ -8,8 +8,7 @@ class bIf {
     constructor() {}
     OnInputChanges(changesObj: any): Array<any> {
         console.log('if指令start:', this.arr);
-        const { currentValue, previousValue } = changesObj;
-        return this.arr > 1 ? [{ arr: this.arr }] : [];
+        return this.arr ? [{ arr: this.arr }] : [];
     }
 }
 export { bIf };
