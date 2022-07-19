@@ -253,13 +253,20 @@ function updateStyle(
  * @param index 节点索引
  * @param content 文本
  */
-function creatText(index: number, content: string) {
-    debugger;
+function creatText(index: number) {
+    console.log(
+        currentTView().$getDefinition()['attributes'][index][AttributeType.text]
+    );
+
     let TView = currentTView(),
         LView = TView[TViewIndex.LView],
-        text = θd.createTextNode(content);
+        { attributes } = TView.$getDefinition(),
+        ctx = TView[TViewIndex.Context],
+        fn = new Function(...attributes[index][AttributeType.text]['content']),
+        text = θd.createTextNode(fn(ctx));
+    console.log('文本节点', fn);
     LView[offset + index] = text;
-    TView[offset + index] = new textNode(content, text, index);
+    TView[offset + index] = new textNode(fn, text, index);
     // 解析 text,确定text的属性
     // resolveText()
     progressContext(index);
@@ -270,10 +277,13 @@ function creatText(index: number, content: string) {
  * @param index 节点索引
  * @param content 节点文本
  */
-function updateText(index: number, content: string) {
-    let LView = currentLView(),
+function updateText(index: number) {
+    let TView = currentTView(),
+        { content } = TView[index + offset],
+        ctx = TView[TViewIndex.Context],
+        LView = currentLView(),
         element = LView[index + offset];
-    element.textContent = content;
+    element.textContent = content(ctx);
 }
 
 /**

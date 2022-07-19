@@ -212,8 +212,13 @@ class Instruction {
                         elementEnd('${tagName}');`;
     }
     resolveText(element: TextTNode) {
+        this.attributes[this.index] = Array.from(
+            new Array(AttributeType.length),
+            () => Object.create(null)
+        );
         this.instructionParams.add('creatText');
-        let hasInterpolation = false,
+        let text = this.attributes[this.index][AttributeType.text],
+            hasInterpolation = false,
             [start, end] = this.configuration.interpolationSyntax,
             interpolationRegExp = new RegExp(
                 `${start}\\s*[a-zA-Z0-9!.]*\\s*${end}`,
@@ -221,25 +226,39 @@ class Instruction {
             ),
             { content } = element;
         hasInterpolation = !!content.match(interpolationRegExp);
-        let expression = content.replace(
-            interpolationRegExp,
-            (interpolation) => {
-                return (
-                    `' + ctx["` +
-                    interpolation
-                        .slice(start.length, interpolation.length - end.length)
-                        .trim()
-                        .replace('.', '"]["') +
-                    `"] + '`
-                );
-            }
-        );
         this.createFn += `
-                        creatText(${this.index},'${expression}');`;
+                        creatText(${this.index});`;
         if (hasInterpolation) {
             this.instructionParams.add('updateText');
+            text['content'] = [
+                'ctx',
+                `with(ctx){
+                    return '${content.replace(
+                        interpolationRegExp,
+                        (interpolation) => {
+                            return (
+                                "'+" +
+                                interpolation
+                                    .slice(
+                                        start.length,
+                                        interpolation.length - end.length
+                                    )
+                                    .trim() +
+                                "+'"
+                            );
+                        }
+                    )}'
+                }
+                `,
+            ];
             this.updateFn += `
-                        updateText(${this.index},'${expression}');`;
+                        updateText(${this.index});`;
+        } else {
+            text['content'] = [
+                'ctx',
+                `return '${content}'
+            `,
+            ];
         }
         this.index++;
     }

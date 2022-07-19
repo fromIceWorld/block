@@ -225,4 +225,33 @@ OnDestroy: view被销毁时
 
 2. template.content内只能加入node，node的事件无法留存
 
-   
+
+# TODO
+
+## 插值语法 
+
+```typescript
+`1.` 无插值
+`2.` 普通插值:   {{ desc1 }},{{desc2}},更多的插值{{desc3}}
+`3.` 对象插值:  {{ obj.desc }},{{obj.desc2}},更多的插值{{obj['desc3']}}
+`4.` 数组插值:  {{ arr[1] }}，数组插值{{ arr[2] }}
+`5.` 作用域插值: {{ arr[index] }} 
+`6.` 1-5组合：  {{obj.arr[index]}}
+
+`支持的语法较多,语法解析较复杂，采取作用域：`
+将表达式解析成纯函数：with(ctx){
+    ....
+}
+```
+
+## 多指令并行
+
+```typescript
+`1.`简单节点: <div *for="arr", *if="item"><div>
+`2.`组件节点: <app-child *for="arr", *if="item"><app-child>  
+```
+
+## 组件/指令 生命周期
+
+## 流畅的数据及逻辑流转
+

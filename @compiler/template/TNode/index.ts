@@ -66,11 +66,11 @@ class elementNode extends TNode {
 }
 class textNode extends TNode {
     type: number = elementType.Text;
-    content: string;
+    content: Function;
     native: Text;
     parent: number = -1;
     index: number;
-    constructor(content: string, native: Text, index: number) {
+    constructor(content: Function, native: Text, index: number) {
         super();
         this.content = content;
         this.native = native;

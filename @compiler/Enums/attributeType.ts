@@ -8,6 +8,7 @@ enum AttributeType {
     structure,
     style,
     class,
+    text,
     length,
 }
 export { AttributeType };
