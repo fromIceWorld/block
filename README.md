@@ -228,7 +228,7 @@ OnDestroy: view被销毁时
 
 # TODO
 
-## 插值语法 
+## 插值语法✔ 
 
 ```typescript
 `1.` 无插值
@@ -249,6 +249,11 @@ OnDestroy: view被销毁时
 ```typescript
 `1.`简单节点: <div *for="arr", *if="item"><div>
 `2.`组件节点: <app-child *for="arr", *if="item"><app-child>  
+    
+'1' 多指令pipe处理上下文：`多层嵌套时处理同一个view，指令的生命周期交叉`
+'2' 将结构性指令分层处理：`上下文需要分层, 上下文处理`
+		在编译时分层指令
+'3' 不支持多指令并行： `缺少逻辑，例如 for if 无法操作一个标签`
 ```
 
 ## 组件/指令 生命周期

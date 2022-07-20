@@ -173,7 +173,12 @@ class Instruction {
         // 嵌入式图
         if (Object.keys(structures).length) {
             let copyEle = copy(element);
-            copyEle.resolvedAttributes[AttributeType.structure] = {};
+            // 过滤掉第一个结构性指令
+            delete copyEle.resolvedAttributes[AttributeType.structure][
+                Object.keys(
+                    copyEle.resolvedAttributes[AttributeType.structure]
+                )[0]
+            ];
             Object.entries(structures).forEach(([key, value]) => {
                 structures[key.slice(1)] = value;
                 delete structures[key];

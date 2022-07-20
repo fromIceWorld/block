@@ -28,6 +28,7 @@ class viewContainer extends TemplateDynamic {
     ) {
         super();
         Object['setPrototypeOf'](this, viewContainer.prototype);
+        console.log('viewContainer的def', def);
         let currentTView = (this.currentTView = TViewFns.currentTView()),
             currentLView = currentTView[TViewIndex.LView];
         this[TViewIndex.Host] = currentLView[index + offset];
@@ -43,10 +44,6 @@ class viewContainer extends TemplateDynamic {
         this.createDirectiveContext();
         this[TViewIndex.EmbeddedView].push(new dir());
     }
-    splitTNode() {
-        let tNode = this.currentTView[this.index + offset],
-            { finAttributes } = tNode;
-    }
     createDirectiveContext(): void {
         let midContext = Object.create(this.currentTView[TViewIndex.Context]);
         midContext[InputChanges] = Object.create({});
@@ -54,8 +51,12 @@ class viewContainer extends TemplateDynamic {
         midContext[InjectChanges] = Object.create({});
         this[TViewIndex.Context] = midContext;
     }
-    attach() {}
+    attach() {
+        TViewFns.pushContext(this);
+        TViewFns.popContext();
+    }
     detectChanges() {
+        TViewFns.pushContext(this);
         this.updateInput();
         let directiveIns = this[TViewIndex.EmbeddedView][0];
         let { finAttributes } = this[TViewIndex.TNode] as elementNode;
@@ -78,6 +79,7 @@ class viewContainer extends TemplateDynamic {
                 Object.setPrototypeOf(context, this[TViewIndex.Context])
             )
         );
+        TViewFns.popContext();
     }
     diff(viewsContext: any[]) {
         console.log('viewContainer currentView', this.currentTView);

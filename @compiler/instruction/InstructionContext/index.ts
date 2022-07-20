@@ -44,7 +44,7 @@ function embeddedViewStart(
     // 解析组件，指令建立抽象节点
     let tNode = resolveNode(tagName, index);
     createNative(tNode, index);
-    resolveDirective(tagName, index, def);
+    extractStructures(index, def);
     progressContext(index);
 }
 function embeddedViewEnd(tagName: string) {
@@ -264,7 +264,6 @@ function creatText(index: number) {
         ctx = TView[TViewIndex.Context],
         fn = new Function(...attributes[index][AttributeType.text]['content']),
         text = θd.createTextNode(fn(ctx));
-    console.log('文本节点', fn);
     LView[offset + index] = text;
     TView[offset + index] = new textNode(fn, text, index);
     // 解析 text,确定text的属性
@@ -348,22 +347,38 @@ function resolveNode(tagName: string, index: number) {
     TView[offset + index] = tNode;
     return tNode;
 }
+function extractStructures(index: number, def: ViewDefination) {
+    let TView = currentTView(),
+        TNode = TView[offset + index] as elementNode;
+    let { attributes } = TNode,
+        has = false,
+        structures = attributes[AttributeType.structure];
+    console.log('解析的结构性指令:', structures);
+    const InRanges = TView[TViewIndex.InRange]();
+    for (let dir of InRanges) {
+        let [k, v] = dir.chooser;
+        if (structures.hasOwnProperty(`${k}`) && v == null) {
+            if (!has) {
+                has = true;
+                new viewContainer(index, def!, dir);
+                TView[TViewIndex.Children].push(index);
+            } else {
+                delete structures[k];
+            }
+        }
+    }
+}
 // TODO: 动态属性匹配指令情况
 /**
  * 解析节点上的组件/指令
  *
  * @param index 节点索引
  */
-function resolveDirective(
-    tagName: string,
-    index: number,
-    def?: ViewDefination
-) {
+function resolveDirective(tagName: string, index: number) {
     let TView = currentTView(),
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index] as elementNode;
-    let { attributes, directives, finAttributes } = TNode,
-        structures = attributes[AttributeType.structure];
+    let { attributes, directives } = TNode;
     const InRanges = TView[TViewIndex.InRange]();
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
@@ -378,10 +393,6 @@ function resolveDirective(
                     native,
                     TView
                 );
-            } else if (structures.hasOwnProperty(k)) {
-                // TODO:多结构性指令作用于同一个节点
-                new viewContainer(index, def!, dir);
-                TView[TViewIndex.Children].push(index);
             }
         } else {
             if (native.hasAttribute(k)) {
