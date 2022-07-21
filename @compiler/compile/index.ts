@@ -26,7 +26,6 @@ class compiler {
         let paramsString = Array.from(this.instruction.instructionParams),
             paramsFns = paramsString.map((key) => this.instructionContext[key]);
         let componentDef = this.instruction.componentDef!(...paramsFns);
-        console.log('组件的指令集函数：', componentDef);
         return componentDef;
     }
     transformByTNodes() {}

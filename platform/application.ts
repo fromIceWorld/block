@@ -103,6 +103,13 @@ class Application {
         this.injector = new StaticInjector(providers, parent, `${module.name}`);
     }
 }
+/**
+ *
+ * @param parentPlatformProviders 平台注入的providers
+ * @param name
+ * @param providers 注入的providers
+ * @returns
+ */
 function collectRunDependency(
     parentPlatformProviders: StaticProvider[],
     name: string,

@@ -12,7 +12,6 @@ class forof {
     constructor(private container: viewContainer) {}
 
     OnInputChanges(changesObj: any) {
-        console.log('forof指令start', this, this.arr, changesObj);
         let views: Array<any> = [];
         if (!this.arr) {
             return views;

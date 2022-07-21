@@ -55,6 +55,7 @@ class TemplateView extends TemplateDynamic {
         Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
+        console.log('组件的数据集合：', def);
         def.template(ViewMode.create, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnSlotInit');
         // 指令
@@ -90,7 +91,7 @@ class TemplateView extends TemplateDynamic {
             let tNode = this[index + offset];
             for (let dir of tNode.directives) {
                 console.log(dir);
-                dir.detectChanges();
+                Hook(dir, 'OnViewUpdateed', this);
             }
         }
         for (let child of children) {

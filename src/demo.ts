@@ -6,7 +6,7 @@ import { Component, Inject, Input, Output } from '../decorators/index';
     template: `
         <h1>-------------------demoComponent-----------start-------------</h1>
         app-demo组件: {{ desc }}
-        <div *forOf="arrs" *if="item == 2">
+        <div *forOf="arrs" *if="item >= 2">
             <span> {{ item }}: [app-demo]{{ desc }}, </span>
             从上级组件获取的值{{ childValue }}
         </div>

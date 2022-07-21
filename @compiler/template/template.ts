@@ -72,6 +72,7 @@ class TemplateDynamic extends Array {
                     ? undefined
                     : inputChanges[localKey]['currentValue'];
             inputChanges[localKey] = {
+                inputKey,
                 currentValue: value,
                 previousValue: currentValue,
                 firstChange,
@@ -170,4 +171,4 @@ function insertMiddleLayer(constructor: ObjectInterface<any>) {
     middle[InjectChanges] = Object.create({});
     return middle;
 }
-export { TemplateDynamic, offset, ViewMode };
+export { TemplateDynamic, offset, ViewMode, insertMiddleLayer };

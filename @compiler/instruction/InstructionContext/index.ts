@@ -1,7 +1,10 @@
 import { ObjectInterface } from '../../../common/interface';
+import { InputChanges, InputKeys } from '../../../decorators/index';
 import { θd } from '../../../DocumentAPI/index';
+import { Hook } from '../../../lifeCycle/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
 import { viewContainer } from '../../template/embedded/index';
+import { insertMiddleLayer } from '../../template/template';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
 
@@ -107,6 +110,7 @@ function elementEnd(tagName: string) {
     const TView = currentTView(),
         LView = TView[TViewIndex.LView],
         index = elementStack.pop()!,
+        native = LView[index + offset],
         tNode = TView[index + offset];
     let rootElements = TView[TViewIndex.RootElements];
     let elementStart = LView[index + offset];
@@ -115,6 +119,10 @@ function elementEnd(tagName: string) {
             rootElements.push(index);
         }
     }
+    // 指令的生命周期
+    tNode.directives.forEach((dir) => {
+        Hook(dir, 'Oninserted', native);
+    });
     // 当前节点是组件，就将slot索引存进 [TViewIndex.Slots];
     if (tNode.TView) {
         tNode.TView[TViewIndex.Slots] = tNode.children;
@@ -129,7 +137,7 @@ function elementEnd(tagName: string) {
 function updateProperty(index: number) {
     let TView = currentTView(),
         tNode = TView[index + offset];
-    let { attributes, finAttributes } = tNode;
+    let { attributes, finAttributes, directives } = tNode;
     let [
         dynamicStyle,
         dynamicClass,
@@ -153,6 +161,10 @@ function updateProperty(index: number) {
             updateClass(index, dynamicClass, finAttributes);
         }
     }
+    // 指令生命周期
+    directives.forEach((dir) => {
+        updateDirective(dir, tNode);
+    });
 }
 /**
  * 更新动态属性
@@ -254,10 +266,6 @@ function updateStyle(
  * @param content 文本
  */
 function creatText(index: number) {
-    console.log(
-        currentTView().$getDefinition()['attributes'][index][AttributeType.text]
-    );
-
     let TView = currentTView(),
         LView = TView[TViewIndex.LView],
         { attributes } = TView.$getDefinition(),
@@ -353,11 +361,10 @@ function extractStructures(index: number, def: ViewDefination) {
     let { attributes } = TNode,
         has = false,
         structures = attributes[AttributeType.structure];
-    console.log('解析的结构性指令:', structures);
     const InRanges = TView[TViewIndex.InRange]();
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
-        if (structures.hasOwnProperty(`${k}`) && v == null) {
+        if (structures.hasOwnProperty(k) && v == null) {
             if (!has) {
                 has = true;
                 new viewContainer(index, def!, dir);
@@ -397,17 +404,41 @@ function resolveDirective(tagName: string, index: number) {
         } else {
             if (native.hasAttribute(k)) {
                 TView[TViewIndex.Directives].add(index);
-                let dirInstance = new dir(index, def, TNode);
+                let dirInstance = instanceDirective(dir, native, TNode);
                 directives.push(dirInstance);
-            } else {
-                if (attributes[AttributeType.staticAttribute][k] == v) {
-                    TView[TViewIndex.Directives].add(index);
-                    let dirInstance = new dir(index, def, TNode);
-                    directives.push(dirInstance);
-                }
             }
         }
     }
+}
+function instanceDirective(
+    directive: ObjectConstructor,
+    native: Element,
+    tNode: elementNode
+) {
+    let context = insertMiddleLayer(directive);
+    Hook(context, 'OnInit', native, tNode);
+    return context;
+}
+function updateDirective(context: ObjectInterface<any>, tNode: elementNode) {
+    let { finAttributes } = tNode,
+        inputKeys = (context as ObjectInterface<any>)[InputKeys] || [],
+        inputChanges = (context as ObjectInterface<any>)[InputChanges];
+    for (let [localKey, inputKey] of Object.entries(
+        inputKeys as ObjectInterface<string>
+    )) {
+        let value = finAttributes[inputKey],
+            firstChange = !inputChanges[localKey],
+            currentValue = firstChange
+                ? undefined
+                : inputChanges[localKey]['currentValue'];
+        inputChanges[localKey] = {
+            inputKey,
+            currentValue: value,
+            previousValue: currentValue,
+            firstChange,
+        };
+    }
+    Hook(context, 'OnInputChanges', inputChanges);
 }
 /**
  * 处理节点之间的关系

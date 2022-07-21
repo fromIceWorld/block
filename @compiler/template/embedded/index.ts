@@ -28,7 +28,6 @@ class viewContainer extends TemplateDynamic {
     ) {
         super();
         Object['setPrototypeOf'](this, viewContainer.prototype);
-        console.log('viewContainer的def', def);
         let currentTView = (this.currentTView = TViewFns.currentTView()),
             currentLView = currentTView[TViewIndex.LView];
         this[TViewIndex.Host] = currentLView[index + offset];
@@ -69,11 +68,9 @@ class viewContainer extends TemplateDynamic {
                 }
             }
         );
-        console.log('指令实例：', directiveIns);
         let views = directiveIns.OnInputChanges(
             this[TViewIndex.Context][InputChanges]
         );
-        console.log('指令劫持的上下文：', directiveIns);
         this.diff(
             views.map((context) =>
                 Object.setPrototypeOf(context, this[TViewIndex.Context])
@@ -82,7 +79,6 @@ class viewContainer extends TemplateDynamic {
         TViewFns.popContext();
     }
     diff(viewsContext: any[]) {
-        console.log('viewContainer currentView', this.currentTView);
         for (
             let i = 0;
             i <
@@ -139,9 +135,7 @@ class embeddedView extends TemplateDynamic {
         let rootElements = this[TViewIndex.RootElements].map(
             (index) => this[TViewIndex.LView]![index + offset]
         );
-        console.log('RootElements', rootElements);
         this[TViewIndex.Host]!.append(...rootElements);
-        console.log('embedded attach', directives, children);
         TViewFns.popContext();
     }
     detectChanges() {
@@ -154,7 +148,6 @@ class embeddedView extends TemplateDynamic {
             let tNode = this[child + offset];
             tNode['TView'].detectChanges();
         }
-        console.log('embedded detectChanges', directives, children);
         TViewFns.popContext();
     }
 }

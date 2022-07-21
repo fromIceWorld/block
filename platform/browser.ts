@@ -18,6 +18,11 @@ const Browser_Providers: StaticProvider[] = [
     },
 ];
 
+/**
+ *
+ * @param extraProvides 插入的providers
+ * @returns 平台实例
+ */
 function PlatformBrowserDynamic(
     extraProvides: StaticProvider[] = []
 ): PlatformRef {

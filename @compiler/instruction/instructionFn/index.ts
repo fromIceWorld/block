@@ -69,8 +69,6 @@ class Instruction {
         this.createComponentDef();
     }
     createComponentDef() {
-        console.log('渲染的def：', this.embeddedViews);
-        console.log('渲染的def.map：');
         this.componentDef = new Function(
             ...Array.from(this.instructionParams),
             `
@@ -125,6 +123,10 @@ class Instruction {
             `
         );
     }
+    /**
+     * 递归解析各类节点生成指令集
+     * @param elements 节点抽象属性
+     */
     resolveTNodes(elements: TNode[]) {
         for (let element of elements) {
             let { type } = element;
@@ -142,7 +144,7 @@ class Instruction {
         }
     }
     /**
-     * 解析节点，生成对应指令集,
+     * 解析element节点，生成对应指令集,
      * 此处解析嵌入视图[包含结构性指令 *for, *if]
      *
      * @param element 节点
@@ -191,6 +193,9 @@ class Instruction {
             this.instructionParams.add('elementStart');
             this.createFn += `
                         elementStart('${tagName}', ${this.index});`;
+            Object.entries(events).forEach(([eventName, fn]) => {
+                this.addListener(eventName, fn);
+            });
             this.index++;
             this.resolveTNodes(children);
             this.closeElement(element);
@@ -206,8 +211,10 @@ class Instruction {
         let paramsString = Array.from(instructionIns.instructionParams),
             paramsFns = paramsString.map((key) => TViewFns[key]),
             componentDef = instructionIns.componentDef!(...paramsFns);
-        // 为嵌入视图生成新的view
-        console.log('递归的指令', componentDef, componentDef.embeddedViews);
+        // 为嵌入视图生成独立的view,以便在结构性指令渲染时有对应的 defination
+        this.instructionParams = new Set(
+            Array.from(this.instructionParams).concat(paramsString)
+        );
         this.embeddedViews.push(componentDef);
     }
     closeElement(element: ElementTNode) {
@@ -216,6 +223,11 @@ class Instruction {
         this.createFn += `
                         elementEnd('${tagName}');`;
     }
+    // TODO:插值字符串 使用token解析以代替with。
+    /**
+     * 插值语法字符串解析较复杂，暂时使用with语句代替
+     * @param element 文本节点
+     */
     resolveText(element: TextTNode) {
         this.attributes[this.index] = Array.from(
             new Array(AttributeType.length),
@@ -267,6 +279,10 @@ class Instruction {
         }
         this.index++;
     }
+    /**
+     *
+     * @param element 注释节点
+     */
     resolveComment(element: CommentTNode) {
         this.instructionParams.add('createComment');
         let { content } = element;
@@ -274,6 +290,10 @@ class Instruction {
                         createComment(${this.index}, '${content}');`;
         this.index++;
     }
+    /**
+     * 将当前节点的属性解析后存储到 组件属性集合上
+     * @param attributes 组件上所有节点的属性集合
+     */
     resolveAttributes(attributes: string[]) {
         this.attributes[this.index] = Array.from(
             new Array(AttributeType.length),
@@ -333,6 +353,9 @@ class Instruction {
             }
         }
     }
+    /**
+     * 判断当前节点是否需要更新属性
+     */
     attemptUpdate() {
         let [
             dynamicStyle,
@@ -352,6 +375,12 @@ class Instruction {
             this.updateProperty();
         }
     }
+    /**
+     * 将动态属性解析成纯函数，在更新时直接输入ctx获取最新属性
+     * @param dynamicKey 属性key
+     * @param value 属性value 的 函数体
+     * @returns
+     */
     extractDynamiceAttributes(dynamicKey: string, value: string) {
         let result: Array<ObjectInterface<string[]>> = [{}, {}, {}, {}, {}],
             contextValue = [
@@ -374,11 +403,19 @@ class Instruction {
         }
         return result;
     }
+    /**
+     * 属性的更新指令集
+     */
     updateProperty() {
         this.instructionParams.add('updateProperty');
         this.updateFn += `
                         updateProperty(${this.index});`;
     }
+    /**
+     *添加事件的指令集
+     * @param eventName 事件名称
+     * @param callback 事件的回调函数
+     */
     addListener(eventName: string, callback: string) {
         this.instructionParams.add('listener');
         let [fn, params] = callback.replace(/[()]/g, ' ').split(' ');

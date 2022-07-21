@@ -7,7 +7,6 @@ class bIf {
     static selector = 'if';
     constructor() {}
     OnInputChanges(changesObj: any): Array<any> {
-        console.log('if指令start:', this.arr);
         return this.arr ? [{ arr: this.arr }] : [];
     }
 }
