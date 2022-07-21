@@ -5,8 +5,8 @@
 - [x] 数据与view绑定更新。
 - [ ] 更好的分层, 代码逻辑, 生命周期, 依赖注入
 - [x] 父子传值  `@Input` `@Output`
-- [ ] 组件生命周期
-- [ ] 指令生命周期
+- [x] 组件生命周期
+- [x] 指令生命周期
 - [x] 依赖注入  `@inject`
 - [x] 更多的结构性指令[for, if,...]
 - [x] slot
@@ -24,15 +24,54 @@
 ```typescript
 `1.`静态视图
 	 无数据绑定，无指令，组件存在的节点;
-`2.`组件视图
-	 组件存在的节点
-`3.`嵌入视图
-	 结构性指令附着的节点
+`1.` TemplateView[组件视图] 
+	    组件生成的视图
+`2.` viewContainer[结构性指令生成的视图]    
+		作为中间层,修改结构，生成 EmbeddedView
+`3.` EmbeddedView[结构性指令作用后生成的视图]
+	    嵌入视图，作为后续的view
 ```
+
+### TemplateView
+
+```typescript
+生命周期依据指令集函数分离`create`, `update`,
+------------------------------------------
+OnInit: 当前view初始化
+OnSlotInit: 插槽内容初始化
+OnViewInit: 子view初始化
+OnInputChanges: 输入属性更改[第一次更改后的更改]
+OnSlotChecked: 插槽内容检查更新后
+OnViewChecked: 子view检查更新后
+
+OnDestroy: view被销毁时
+
+`create`: OnInit, OnSlotInit, OnViewInit
+`update`: OnInputChanges, OnSlotChecked, OnViewChecked
+
+`destroy`: OnDestroy
+```
+
+
+
+### EmbeddedView
+
+```typescript
+结构性指令可对view产生影响, 独立出来更容易处理;
+----------------------------------------------
+`1`: 结构性指令 --创建--> viewContainer                 【创建指令集时】
+`2`: view生命周期 --触发--> viewContainer生命周期        【指令集执行时】
+`3`: viewContainer生命周期 --触发--> 更新指令的@Input属性 【attach】
+`4`: 指令更改后的上下文 传递给 viewContainer 作为diff      【detectChange】
+
+`diff，比较数据`
+```
+
+
 
 ## 指令
 
-根据功能分两种：结构性指令，属性性指令
+`结构性指令`，`属性性指令`
 
 ### 结构性指令
 
@@ -40,15 +79,16 @@
 
 `for`,`if`
 
+```typescript
 控制template,形成一层虚拟的上下文，控制view的 显示/不渲染/循环。
 
-```
-for：根据@Input的值，去虚拟一层上下文
+`forOf`：根据@Input的值，去虚拟一层上下文
+`if`:
 ```
 
 ### 属性性指令
 
-【控制节点的生命周期，但不控制结构】
+【在节点的生命周期中执行业务逻辑，但不控制结构】
 
 ```typescript
 在特定的生命周期处理自定义事件
@@ -107,9 +147,6 @@ for：根据@Input的值，去虚拟一层上下文
 `
 1.引入时机，在组件实例化前,因为init时可能使用
 2.在父组件更新后，因为需要给子组件最新值所以在attach，detecchange运行前更新最新值
-
-
-
 ```
 
 ### @Output
@@ -139,11 +176,11 @@ for：根据@Input的值，去虚拟一层上下文
 
 ```typescript
 `普通指令`:操作所附着的节点
-	init:指令初始化[native被创建],输入到指令的值是静态的的值(native,tNode)
-	inserted:当前指令附加的节点及子节点创建后[已经有native及children节点](native)
-	inputChanges: 当前节点数据更新(@Input数据)
-    viewUpdateed:当前指令所在的view更新后(view)
-    destroy：指令销毁[节点上的指令属性消失，节点销毁]
+	OnInit:指令初始化[native被创建],输入到指令的值是静态的的值(native,tNode)
+	OnInserted:当前指令附加的节点及子节点创建后[已经有native及children节点](native)
+	OnInputChanges: 当前节点数据更新(@Input数据)
+    OnViewUpdateed:当前指令所在的view更新后(view)
+    OnDestroy：指令销毁[节点上的指令属性消失，节点销毁]
     
 `结构性指令`:只控制结构
 	*forOf
@@ -152,53 +189,15 @@ for：根据@Input的值，去虚拟一层上下文
 
 ### 组件
 
-## View
-
-视图：`EmbeddedView`, `TemplateView`
-
-### EmbeddedView
-
-`嵌入视图`：结构性指令有关[for, if,....]
-
 ```typescript
-结构性指令可对view产生影响, 独立出来更容易处理;
-----------------------------------------------
-`1`: 结构性指令 --创建--> viewContainer 
-`2`: view生命周期 --触发--> viewContainer生命周期
-`3`: viewContainer生命周期 --触发--> 更新指令的@Input属性
-`4`: 指令更改后的上下文 传递给 viewContainer 作为diff
-
-`diff，比较数据`
+`OnInputChanges`: @Input属性更改
+`OnInit`          当前view初始化
+`OnSlotInit`      slot节点初始化
+`OnViewInit`      子view初始化后
+`OnSlotChecked`   slot节点检查更新后
+`OnViewChecked`   子view检查更新后【detectChange】
+`OnDestroy`       view销毁
 ```
-
-### TemplateView
-
-`广度优先`
-
-```typescript
-生命周期依据指令集函数分离`create`, `update`,
-------------------------------------------
-OnInit: 当前view初始化
-OnSlotInit: 插槽内容初始化
-OnViewInit: 子view初始化
-OnInputChanges: 输入属性更改[第一次更改后的更改]
-OnSlotChecked: 插槽内容检查更新后
-OnViewChecked: 子view检查更新后
-
-OnDestroy: view被销毁时
-
-`create`: OnInit, OnSlotInit, OnViewInit
-`update`: OnInputChanges, OnSlotChecked, OnViewChecked
-
-`destroy`: OnDestroy
-```
-
-## 结构性指令
-
-- [x] for 
-- [x] if
-- [ ] 多指令串行
-- [ ] 子组件递归
 
 ## css选择器
 
@@ -211,7 +210,7 @@ OnDestroy: view被销毁时
 		当页面中元素过多时，需要查询较复杂
 ```
 
-## template上下文
+## 组件/指令上下文
 
 ### 组件
 
@@ -272,10 +271,6 @@ OnDestroy: view被销毁时
 		在编译时分层指令✔
         节点绑定的事件上下文已经改变为指令上下文 ❌
 ```
-
-## 组件/指令 生命周期
-
-
 
 ## 流畅的数据及逻辑流转
 
