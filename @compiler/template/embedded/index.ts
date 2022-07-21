@@ -50,10 +50,7 @@ class viewContainer extends TemplateDynamic {
         midContext[InjectChanges] = Object.create({});
         this[TViewIndex.Context] = midContext;
     }
-    attach() {
-        TViewFns.pushContext(this);
-        TViewFns.popContext();
-    }
+    attach() {}
     detectChanges() {
         TViewFns.pushContext(this);
         this.updateInput();

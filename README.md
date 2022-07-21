@@ -15,15 +15,11 @@
 - [ ] web components支持
 - [ ] ...
 
-
-
 ## view
 
 `EmbeddedView`, `TemplateView`,`viewContainer`
 
 ```typescript
-`1.`静态视图
-	 无数据绑定，无指令，组件存在的节点;
 `1.` TemplateView[组件视图] 
 	    组件生成的视图
 `2.` viewContainer[结构性指令生成的视图]    
@@ -35,7 +31,7 @@
 ### TemplateView
 
 ```typescript
-生命周期依据指令集函数分离`create`, `update`,
+编译函数将组件编译成只有`create`, `update`两个函数的指令集,
 ------------------------------------------
 OnInit: 当前view初始化
 OnSlotInit: 插槽内容初始化
@@ -52,8 +48,6 @@ OnDestroy: view被销毁时
 `destroy`: OnDestroy
 ```
 
-
-
 ### EmbeddedView
 
 ```typescript
@@ -67,7 +61,12 @@ OnDestroy: view被销毁时
 `diff，比较数据`
 ```
 
+### viewContainer
 
+```typescript
+每一个结构性指令都会创建一个`viewContainer`,作为TemplateView的 child,
+当TemplateView在 detectChange时，`viewContainer`会更新指令上下文，指令根据上下文去处理数据，再把处理完的数据给`viewContainer`,`viewContainer`执行diff，控制EmbeddedView的create/update/destroy
+```
 
 ## 指令
 
