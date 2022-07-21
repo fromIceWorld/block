@@ -139,10 +139,10 @@ for：根据@Input的值，去虚拟一层上下文
 
 ```typescript
 `普通指令`:操作所附着的节点
-	init:指令初始化[native被创建],输入到指令的值是静态的的值
-	inserted:当前指令附加的节点及子节点创建后[已经有native及children节点]
-	inputChanges: 当前节点数据更新
-    viewUpdateed:当前指令所在的view更新后
+	init:指令初始化[native被创建],输入到指令的值是静态的的值(native,tNode)
+	inserted:当前指令附加的节点及子节点创建后[已经有native及children节点](native)
+	inputChanges: 当前节点数据更新(@Input数据)
+    viewUpdateed:当前指令所在的view更新后(view)
     destroy：指令销毁[节点上的指令属性消失，节点销毁]
     
 `结构性指令`:只控制结构
