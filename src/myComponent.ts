@@ -1,4 +1,5 @@
-import { Component } from '../decorators/index';
+import { Component, Inject } from '../decorators/index';
+import { Router } from './routerModule/router';
 @Component({
     selector: `#root`,
     styles: ``,
@@ -31,9 +32,11 @@ import { Component } from '../decorators/index';
             <span slot="slot1">slot1</span>
         </app-child>
 
-        <!-- 注释信息-->`,
+        <!-- 注释信息-->
+        <router-view></router-view>`,
 })
 class MyComponent {
+    @Inject(Router) router;
     exp = '第一个插值';
     displayIf: boolean = true;
     exp2 = '第2个插值';
@@ -45,9 +48,6 @@ class MyComponent {
     emit(e: EventTarget, value: any) {
         console.log(e, value, this);
     }
-    console(e: EventTarget) {
-        console.log('接收到子组件的emit', e);
-    }
     OnInputChanges(changesObj: any) {
         console.log(
             '%cmyComponent: %cOnIputChanges',
@@ -58,6 +58,7 @@ class MyComponent {
     }
     OnInit() {
         console.log('%cmyComponent: %cOnInit', 'color:green', 'color:blue');
+        console.log(this.router);
     }
     OnSlotInit() {
         console.log('%cmyComponent: %cOnSlotInit', 'color:green', 'color:blue');

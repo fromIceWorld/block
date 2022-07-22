@@ -1,9 +1,9 @@
 interface ModuleParams {
-    declarations: Array<any>;
-    imports: Array<any>;
-    exports: Array<any>;
-    providers: Array<any>;
-    bootstrap: Array<any>;
+    declarations?: Array<any>;
+    imports?: Array<any>;
+    exports?: Array<any>;
+    providers?: Array<any>;
+    bootstrap?: Array<any>;
 }
 function Module(params: ModuleParams): Function {
     let { declarations, imports, exports, providers, bootstrap } = params;

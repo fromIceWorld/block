@@ -1,12 +1,7 @@
 import { bootstrapView } from '../@compiler/instruction/InstructionContext/index';
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { resolveSelector } from '../common/selector';
-import {
-    currentInjector,
-    Injector,
-    StaticInjector,
-    StaticProvider,
-} from '../Injector/index';
+import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
 
 const componentFromModule = '$$_Bind_Module',
     moduleCore: string = '$$_Module_Core';
@@ -70,9 +65,14 @@ class Application {
         module['moduleCore'] = this;
     }
     registerModule(module: any, root: Application) {
-        let { $declarations, $imports, $exports, $providers, $bootstrap } =
-            module;
-        this.collectProvider(module, $providers);
+        let {
+            $declarations = [],
+            $imports = [],
+            $exports = [],
+            $providers = [],
+            $bootstrap = [],
+        } = module;
+        this.collectAndRegisterProvider(module, $providers);
         for (let declaration of $declarations) {
             declaration.chooser = resolveSelector(declaration.selector);
             if (declaration.hasOwnProperty(componentFromModule)) {
@@ -98,9 +98,16 @@ class Application {
         }
         return $exports;
     }
-    collectProvider(module: any, providers: any[]) {
-        let parent = currentInjector;
-        this.injector = new StaticInjector(providers, parent, `${module.name}`);
+    collectAndRegisterProvider(module: any) {
+        let providers = this.collectProvider(module);
+        this.injector = new StaticInjector(providers, `${module.name}`);
+    }
+    collectProvider(module: any) {
+        let { $providers = [], $imports = [] } = module;
+        for (let module of $imports) {
+            $providers = $providers.concat(this.collectProvider(module));
+        }
+        return $providers;
     }
 }
 /**

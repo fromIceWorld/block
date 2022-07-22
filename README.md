@@ -234,6 +234,22 @@ OnDestroy: view被销毁时
 
 2. template.content内只能加入node，node的事件无法留存
 
+## 路由体系
+
+```typescript
+规定：
+`0.` 明确的组件<router-view>是渲染组件的位置
+`1.` <router-view>，不接受输入属性，可以通过 queryParams传值,router配置策略,
+
+`方式1`：
+	自定义def,在def里面自定义函数检测路由的变化,自定义更新时机[router-view组件劫持了原系统,更偏底层]
+`方式2`：
+	增加一个container,专门操作router[混入严重]
+`方式3`：
+    
+```
+
+
 
 # TODO
 

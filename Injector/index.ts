@@ -47,9 +47,9 @@ class StaticInjector {
     records = new Map<any, any>();
     _desc: string;
     constructor(
-        provides: StaticProvider[],
-        private parent: Injector = currentInjector,
-        desc: string = ''
+        provides: StaticProvider[] = [],
+        desc: string = '',
+        private parent: Injector = currentInjector
     ) {
         this._desc = desc;
         provides.forEach((provider) => {
@@ -62,6 +62,7 @@ class StaticInjector {
                 deps,
             });
         });
+        currentInjector = this;
     }
     get(token: any, notFoundValue?: any) {
         // 自定义依赖注入

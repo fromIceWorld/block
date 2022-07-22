@@ -103,9 +103,9 @@ class TemplateDynamic extends Array {
     // 实例化依赖注入到mid
     InstanceInjects() {
         // 根节点无
-        if (!this[TViewIndex.TNode]) {
-            return;
-        }
+        // if (!this[TViewIndex.TNode]) {
+        //     return;
+        // }
         const injectKeys = this[TViewIndex.Context][InjectKeys] || [],
             injectChanges = this[TViewIndex.Context][InjectChanges],
             injector = this[TViewIndex.Injector];
@@ -144,7 +144,7 @@ class TemplateDynamic extends Array {
     initContext() {
         let tNode = this[TViewIndex.TNode],
             dir = this[TViewIndex.Class];
-        return !tNode ? new dir!() : insertMiddleLayer(dir!);
+        return insertMiddleLayer(dir!);
     }
     /**
      * 合并初始化的context，@Input，@Output，@Inject。

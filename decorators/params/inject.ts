@@ -1,0 +1,2 @@
+function Inject() {}
+export { Inject };

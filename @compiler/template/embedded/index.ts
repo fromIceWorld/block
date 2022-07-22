@@ -17,7 +17,6 @@ import { LogicView } from '../TView/LogicView';
 import { TemplateView } from '../TView/TemplateView';
 
 class viewContainer extends TemplateDynamic {
-    currentViewDefination?: ViewDefination[];
     previousViewDefination?: ViewDefination[] = [];
     childrenView: embeddedView[] = [];
     currentTView: TemplateView;
