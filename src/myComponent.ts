@@ -33,7 +33,8 @@ import { Router } from './routerModule/router';
         </app-child>
 
         <!-- 注释信息-->
-        <router-view></router-view>`,
+        <h1 style="background:yellow">下面是路由：</h1>
+        <router-view *route="exp2"></router-view>`,
 })
 class MyComponent {
     @Inject(Router) router;

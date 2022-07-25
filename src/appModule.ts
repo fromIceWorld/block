@@ -5,11 +5,8 @@ import { firstDirective } from './firstDirective';
 import { forof } from './forOf';
 import { bIf } from './if';
 import { MyComponent } from './myComponent';
-import { RouterModule } from './routerModule/index';
 import { Router } from './routerModule/router';
-import { routes } from './routerModule/routes';
-let router = new Router();
-router.register(routes);
+import { RouterView } from './routerModule/router-view';
 @Module({
     declarations: [
         MyComponent,
@@ -18,9 +15,10 @@ router.register(routes);
         firstDirective,
         forof,
         bIf,
+        RouterView,
     ],
     providers: [{ provide: Router, useValue: Router }],
-    imports: [RouterModule],
+    imports: [],
     exports: [],
     bootstrap: [MyComponent],
 })

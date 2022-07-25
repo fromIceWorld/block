@@ -246,6 +246,7 @@ OnDestroy: view被销毁时
 `方式2`：
 	增加一个container,专门操作router[混入严重]
 `方式3`：
+	指令保存viewContainer,在特定的时期操作viewContainer变更组件
     
 ```
 

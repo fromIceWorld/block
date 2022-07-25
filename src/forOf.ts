@@ -10,7 +10,6 @@ class forof {
     index: string = 'index';
     static selector = 'forOf';
     constructor(private container: viewContainer) {}
-
     OnInputChanges(changesObj: any) {
         let views: Array<any> = [];
         if (!this.arr) {

@@ -34,8 +34,8 @@ class TemplateDynamic extends Array {
     [TViewIndex.Injector]?: StaticInjector;
     [TViewIndex.Module]: any;
     [TViewIndex.InRange] = () => {
-        return this[TViewIndex.Module]
-            ? this[TViewIndex.Module]['moduleCore'].inRange
+        return this[TViewIndex.Module] && this[TViewIndex.Module]['moduleCore']
+            ? this[TViewIndex.Module]['moduleCore'].inRange || []
             : this[TViewIndex.Parent]![TViewIndex.InRange];
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
