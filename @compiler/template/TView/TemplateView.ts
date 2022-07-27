@@ -35,7 +35,7 @@ class TemplateView extends TemplateDynamic {
             : null;
         this[TViewIndex.Parent] = parent;
         this.injectProviders();
-        this.initContext();
+        this[TViewIndex.Context] = this.initContext();
     }
     private $getDefinition: any = (() => {
         return () => {

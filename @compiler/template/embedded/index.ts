@@ -34,25 +34,22 @@ class ViewContainer extends TemplateDynamic {
             ? (dir as any)[componentFromModule]
             : null;
         this.injectProviders();
-        this.initContext();
-        Object.setPrototypeOf(
-            Object.getPrototypeOf(this[TViewIndex.Context]),
-            this.currentTView[TViewIndex.Context]
-        );
+        this[TViewIndex.Context] = this.currentTView[TViewIndex.Context];
+        this[TViewIndex.EmbeddedView] = this.initContext();
     }
     attach() {
         this.updateInput();
         Hook(
-            this[TViewIndex.Context],
+            this[TViewIndex.EmbeddedView]!,
             'OnInputChanges',
-            this[TViewIndex.Context]
+            this[TViewIndex.EmbeddedView]
         );
     }
     detectChanges() {
         TViewFns.pushContext(this);
         this.updateInput();
-        let views = this[TViewIndex.Context].OnInputChanges(
-            this[TViewIndex.Context][InputChanges]
+        let views = this[TViewIndex.EmbeddedView].OnInputChanges(
+            this[TViewIndex.EmbeddedView][InputChanges]
         );
         this.diff(
             views.map((context) =>

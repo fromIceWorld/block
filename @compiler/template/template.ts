@@ -139,10 +139,11 @@ class TemplateDynamic extends Array {
             tokens = dir[InjectToken] || [],
             providers = tokens.map((token: any) =>
                 this[TViewIndex.Injector]?.get(token)
-            );
-        this[TViewIndex.Context] = new dir(...providers);
+            ),
+            ctx = new dir(...providers);
         this.initDecoratorPropties();
         this.mergeContextAndDecorators();
+        return ctx;
     }
 }
 
