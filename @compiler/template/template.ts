@@ -1,6 +1,6 @@
 import { EventEmitter } from '../../common/event/EventEmitter';
 import { ConstructortInterface, ObjectInterface } from '../../common/interface';
-import { InjectChanges, InputKeys } from '../../decorators/index';
+import { InputKeys } from '../../decorators/index';
 import { InjectToken } from '../../decorators/params/inject';
 import { InputChanges } from '../../decorators/prop/Input';
 import { EventChanges, EventKeys } from '../../decorators/prop/Output';
@@ -107,7 +107,6 @@ class TemplateDynamic extends Array {
         ctx[InputChanges] = Object.create({});
         ctx[EventChanges] = Object.create({});
         ctx[InjectToken] = [];
-        ctx[InjectChanges] = Object.create({});
         this.updateInput();
         this.createOutput();
     }
@@ -141,6 +140,7 @@ class TemplateDynamic extends Array {
                 this[TViewIndex.Injector]?.get(token)
             ),
             ctx = new dir(...providers);
+        this[TViewIndex.Context] = ctx;
         this.initDecoratorPropties();
         this.mergeContextAndDecorators();
         return ctx;

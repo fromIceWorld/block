@@ -1,6 +1,5 @@
 import { ConstructortInterface } from '../../../common/interface';
 import { InputChanges } from '../../../decorators/index';
-import { Hook } from '../../../lifeCycle/index';
 import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/TView';
 import {
@@ -39,11 +38,11 @@ class ViewContainer extends TemplateDynamic {
     }
     attach() {
         this.updateInput();
-        Hook(
-            this[TViewIndex.EmbeddedView]!,
-            'OnInputChanges',
-            this[TViewIndex.EmbeddedView]
-        );
+        // Hook(
+        //     this[TViewIndex.EmbeddedView]!,
+        //     'OnInputChanges',
+        //     this[TViewIndex.EmbeddedView]
+        // );
     }
     detectChanges() {
         TViewFns.pushContext(this);

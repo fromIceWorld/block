@@ -1,7 +1,6 @@
 import { ObjectInterface } from '../../common/interface';
 
-const InjectKeys = Symbol('$$_@Inject_Keys'),
-    InjectChanges = Symbol('$$_@Inject_Changes');
+const InjectKeys = Symbol('$$_@Inject_Keys');
 function Inject(injectToken: any) {
     return function (target: ObjectInterface<any>, key: string) {
         if (!target[InjectKeys]) {
@@ -10,4 +9,4 @@ function Inject(injectToken: any) {
         target[InjectKeys][key] = injectToken;
     };
 }
-export { Inject, InjectKeys, InjectChanges };
+export { Inject, InjectKeys };

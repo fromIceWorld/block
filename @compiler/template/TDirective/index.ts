@@ -23,7 +23,7 @@ class TemplateDirective extends TemplateDynamic {
         this[TViewIndex.Parent] = TViewFns.currentTView();
         this[TViewIndex.Class] = dir;
         this.injectProviders();
-        this[TViewIndex.EmbeddedView] = this.initContext();
+        // this[TViewIndex.EmbeddedView] = this.initContext();
     }
     attach() {}
     detectChanges(): void {}
