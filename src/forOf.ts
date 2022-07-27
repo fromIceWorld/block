@@ -1,4 +1,4 @@
-import { viewContainer } from '../@compiler/template/embedded/index';
+import { ViewContainer } from '../@compiler/template/embedded/index';
 import { Input } from '../decorators/index';
 
 class forof {
@@ -9,7 +9,7 @@ class forof {
     @Input('index')
     index: string = 'index';
     static selector = 'forOf';
-    constructor(private container: viewContainer) {}
+    constructor(private container: ViewContainer) {}
     OnInputChanges(changesObj: any) {
         let views: Array<any> = [];
         if (!this.arr) {

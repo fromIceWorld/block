@@ -3,8 +3,8 @@ import { InputChanges, InputKeys } from '../../../decorators/index';
 import { θd } from '../../../DocumentAPI/index';
 import { Hook } from '../../../lifeCycle/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
-import { viewContainer } from '../../template/embedded/index';
-import { insertMiddleLayer } from '../../template/template';
+import { ViewContainer } from '../../template/embedded/index';
+import { TemplateDirective } from '../../template/TDirective/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
 
@@ -80,7 +80,7 @@ function createNative(tNode: elementNode, index: number) {
         slotName: string = finAttributes['name'],
         parentTView = TView[TViewIndex.Parent],
         dom = θd.createElement(tagName);
-    while (parentTView instanceof viewContainer) {
+    while (parentTView instanceof ViewContainer) {
         parentTView = parentTView[TViewIndex.Parent];
     }
     if (tagName == 'slot') {
@@ -150,7 +150,6 @@ function updateProperty(index: number) {
     if (Object.keys(structure).length > 0) {
         updateInputValue(index, structure, finAttributes);
     } else {
-        // 结构性指令生成template节点，不应该添加属性
         if (Object.keys(dynamicAttrubute).length > 0) {
             updateProp(index, dynamicAttrubute, finAttributes);
         }
@@ -367,7 +366,7 @@ function extractStructures(index: number, def: ViewDefination) {
         if (structures.hasOwnProperty(k) && v == null) {
             if (!has) {
                 has = true;
-                new viewContainer(index, def!, dir);
+                new ViewContainer(index, def!, dir);
                 TView[TViewIndex.Children].push(index);
             } else {
                 delete structures[k];
@@ -404,7 +403,12 @@ function resolveDirective(tagName: string, index: number) {
         } else {
             if (native.hasAttribute(k)) {
                 TView[TViewIndex.Directives].add(index);
-                let dirInstance = instanceDirective(dir, native, TNode);
+                let dirInstance = new TemplateDirective(
+                    index,
+                    dir,
+                    native,
+                    TNode
+                );
                 directives.push(dirInstance);
             }
         }
@@ -415,7 +419,7 @@ function instanceDirective(
     native: Element,
     tNode: elementNode
 ) {
-    let context = insertMiddleLayer(directive);
+    let context = new directive();
     Hook(context, 'OnInit', native, tNode);
     return context;
 }

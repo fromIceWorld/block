@@ -17,7 +17,7 @@ import { Router } from './routerModule/router';
                 &name="block"
                 @click="emit($event,123)"
             >
-                {{ displayIf }}
+                {{ arr }}
             </div>
         </div>
         <p

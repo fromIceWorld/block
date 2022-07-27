@@ -1,13 +1,19 @@
 import { elementType } from '../../@compiler/Enums/elementType';
 import { Instruction } from '../../@compiler/instruction/index';
 import { TViewFns } from '../../@compiler/instruction/InstructionContext/index';
-import { Inject } from '../../decorators/index';
+import { ViewContainer } from '../../@compiler/template/embedded/index';
+import { Inject } from '../../decorators/params/inject';
 import { Router } from '../routerModule/router';
 
 class RouterView {
-    @Inject(Router) router;
     static selector = 'route';
-    constructor(private viewContainer) {
+    constructor(
+        @Inject(Router) private router: Router,
+        @Inject(ViewContainer) private viewContainer: ViewContainer
+    ) {
+        if (router) {
+            router.subscribe(viewContainer);
+        }
         console.log('所在的 viewContainer', this.viewContainer);
     }
     OnDestroy() {}
@@ -15,6 +21,7 @@ class RouterView {
         console.log('router-view', this.viewContainer);
     }
     OnInputChanges(ctx) {
+        console.log('@Inject路由', this.router);
         let ran = Math.random();
         if (ran > 0.5) {
             let instructionIns = new Instruction();

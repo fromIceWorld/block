@@ -35,7 +35,7 @@ class TemplateView extends TemplateDynamic {
             : null;
         this[TViewIndex.Parent] = parent;
         this.injectProviders();
-        this[TViewIndex.Context] = this.initContext();
+        this.initContext();
     }
     private $getDefinition: any = (() => {
         return () => {
@@ -51,7 +51,6 @@ class TemplateView extends TemplateDynamic {
     })();
     attach(): void {
         TViewFns.pushContext(this);
-        this.createContext();
         Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];

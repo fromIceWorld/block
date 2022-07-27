@@ -1,17 +1,14 @@
 import { Module } from '../../decorators/index';
+import { Route } from './Enums/route';
 import { RouterView } from './router-view';
 @Module({
     declarations: [RouterView],
+    exports: [RouterView],
 })
-export class RouterModule {
-    static tree: any;
-    static register(config) {
-        this.tree = config;
-        return [
-            {
-                provide: RouterModule,
-                useClass: RouterModule,
-            },
-        ];
+class RouterModule {
+    static tree: Map<string, any> = new Map();
+    static register(routes: Route[]) {
+        this.tree = routes;
     }
 }
+export { RouterModule };

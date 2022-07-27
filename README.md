@@ -79,7 +79,9 @@ OnDestroy: view被销毁时
 `for`,`if`
 
 ```typescript
-控制template,形成一层虚拟的上下文，控制view的 显示/不渲染/循环。
+`劫持`了template的部分节点,形成一层上下文，控制view的 显示/不渲染/循环。
+
+`劫持`：渲染的上下文与template无关，只与指令实例有关
 
 `forOf`：根据@Input的值，去虚拟一层上下文
 `if`:
@@ -124,14 +126,19 @@ OnDestroy: view被销毁时
 
 ### application
 
-```
-一个运行的实例。
+```typescript
+一个运行的实例。运行模式：
+`1.` 注册router的应用
+`2.` 未注册router的基础应用
 ```
 
 ### module
 
 ```typescript
-用于隔离组件,指令,pipe等, 使代码之间耦合度更低，方便低代码拆分。
+将业务隔离，不同的业务存在于特定的模块中,使代码之间耦合度更低，方便低代码拆分。
+`1.` 单独的module渲染
+`2.` 作为router中的某一个模块的module
+
 ```
 
 ## 组件传值
@@ -235,6 +242,22 @@ OnDestroy: view被销毁时
 2. template.content内只能加入node，node的事件无法留存
 
 ## 路由体系
+
+路由范围
+
+```typescript
+`1.` 应用 [应用注册路由, 路由引导模块,模块延申新路由]
+`2.` 模块 [模块定义路由,不同的模块定义不同的路由段,在Router中延申新路由]
+`3.` 应用+模块 [应用定义base路由,模块延申路由]   `可通过应用组合多个单独抽出来的module`
+```
+
+router
+
+```typescript
+
+```
+
+路由定义
 
 ```typescript
 规定：

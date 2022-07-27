@@ -1,3 +1,4 @@
+import { ViewContainer } from '../@compiler/template/embedded/index';
 import { Module } from '../decorators/index';
 import { ChilComponent } from './childComponent';
 import { demoComponent } from './demo';
@@ -17,9 +18,18 @@ import { RouterView } from './routerModule/router-view';
         bIf,
         RouterView,
     ],
-    providers: [{ provide: Router, useValue: Router }],
+    providers: [
+        { provide: ViewContainer, useValue: ViewContainer },
+        { provide: Router, useValue: Router },
+    ],
     imports: [],
     exports: [],
+    routes: [
+        {
+            path: 'demo',
+            component: MyComponent,
+        },
+    ],
     bootstrap: [MyComponent],
 })
 class AppModule {}

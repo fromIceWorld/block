@@ -4,7 +4,7 @@ const InputKeys = Symbol('$$_@Input_Keys'),
 function Input(inputKey: string) {
     return function (target: ObjectInterface<any>, localKey: string) {
         if (!target[InputKeys]) {
-            target[InputKeys] = Object.create({});
+            target[InputKeys] = [];
         }
         target[InputKeys][localKey] = inputKey;
     };

@@ -1,39 +1,32 @@
 import { ConstructortInterface } from '../../../common/interface';
-import {
-    EventChanges,
-    InjectChanges,
-    InputChanges,
-} from '../../../decorators/index';
+import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/index';
+import { TViewFns } from '../../instruction/InstructionContext/index';
 import { TemplateDynamic } from '../template';
 import { elementNode } from '../TNode/index';
-import { TemplateView } from '../TView/TemplateView';
 
 class TemplateDirective extends TemplateDynamic {
     constructor(
         private index: number,
-        tNode: elementNode,
-        tView: TemplateView,
-        dir: ConstructortInterface
+        dir: ConstructortInterface,
+        native: Element,
+        tNode: elementNode
     ) {
         super();
         Object['setPrototypeOf'](this, TemplateDirective.prototype);
+        this[TViewIndex.Class] = dir;
         this[TViewIndex.TNode] = tNode;
-        this[TViewIndex.Parent] = tView;
+        this[TViewIndex.Host] = native;
+        this[TViewIndex.Module] = dir.hasOwnProperty(componentFromModule)
+            ? (dir as any)[componentFromModule]
+            : null;
+        this[TViewIndex.Parent] = TViewFns.currentTView();
         this[TViewIndex.Class] = dir;
         this.injectProviders();
-        let midContext = Object.create(tView[TViewIndex.Context]);
-        midContext[InputChanges] = Object.create({});
-        midContext[EventChanges] = Object.create({});
-        midContext[InjectChanges] = Object.create({});
-        this[TViewIndex.Context] = midContext;
+        this.initContext();
     }
-    attach() {
-        this.createContext();
-    }
-    detectChanges(): void {
-        this.updateInput();
-    }
+    attach() {}
+    detectChanges(): void {}
     destroy() {}
 }
 export { TemplateDirective };

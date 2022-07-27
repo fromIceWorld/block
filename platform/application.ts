@@ -2,6 +2,8 @@ import { bootstrapView } from '../@compiler/instruction/InstructionContext/index
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { resolveSelector } from '../common/selector';
 import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
+import { Route } from '../src/routerModule/Enums/route';
+import { Router } from '../src/routerModule/router';
 
 const componentFromModule = '$$_Bind_Module',
     moduleCore: string = '$$_Module_Core';
@@ -27,13 +29,15 @@ class PlatformRef {
      */
     bootstrapModule(module: any) {
         let { $bootstrap } = module;
-        let app = new Application(module);
+        let app = new Application();
+        app.registerModule(module);
         this.applications.add(app);
         if ($bootstrap.length > 0) {
             this.bootstrapComponent($bootstrap[0], app);
             // app['rootTView']?.detectChanges();
         }
     }
+    bootstrapRoutes() {}
     /**
      *平台调用 视图部分API，将组件挂载到view上
      *
@@ -60,19 +64,43 @@ class Application {
     injector?: Injector;
     inRange: Array<any> = [];
     rootTView?: TemplateView;
-    constructor(module: any) {
-        this.registerModule(module, this);
-        module['moduleCore'] = this;
+    routesTree: Map<string, Map<string, any>> = new Map();
+    collectDeclarations(module: any) {
+        let { $declarations = [], $imports } = module,
+            partDeclarations = [...$declarations];
+        for (let m of $imports) {
+            partDeclarations.push(...this.collectDeclarations(m));
+        }
+        return partDeclarations;
     }
-    registerModule(module: any, root: Application) {
+    bootstrapRouter() {
+        new Router();
+    }
+    resolveRoutes(routes: Route[], pre: Map<string, any>) {
+        if (!pre.has('children')) {
+            pre.set('children', []);
+        }
+        for (let route of routes) {
+            let { path, component, loadChildren, children = [] } = route,
+                config = new Map();
+            config.set('path', path);
+            config.set('component', component);
+            this.resolveRoutes(children, config);
+            pre.get('children').push(config);
+        }
+        return pre;
+    }
+    registerModule(module: any) {
         let {
             $declarations = [],
             $imports = [],
             $exports = [],
             $providers = [],
             $bootstrap = [],
+            $routes = [],
         } = module;
-        this.collectAndRegisterProvider(module, $providers);
+        module[moduleCore] = this;
+        this.collectAndRegisterProvider(module);
         for (let declaration of $declarations) {
             declaration.chooser = resolveSelector(declaration.selector);
             if (declaration.hasOwnProperty(componentFromModule)) {
@@ -85,29 +113,27 @@ class Application {
             });
             this.inRange.push(declaration);
         }
-        root.modules.set(module, {
+        this.modules.set(module, {
             $declarations,
             $imports,
             $exports,
             $providers,
             $bootstrap,
         });
+        if ($routes) {
+            let routesTree = this.resolveRoutes($routes, new Map());
+            console.log(routesTree);
+            this.bootstrapRouter();
+        }
         for (let depModule of $imports) {
-            let exports = this.registerModule(depModule, root);
-            this.inRange = [...this.inRange, ...exports];
+            let exports = this.registerModule(depModule);
+            this.inRange = [...this.inRange, ...exports]; //收集依附模块暴露出的组件/指令/pipe
         }
         return $exports;
     }
     collectAndRegisterProvider(module: any) {
-        let providers = this.collectProvider(module);
-        this.injector = new StaticInjector(providers, `${module.name}`);
-    }
-    collectProvider(module: any) {
-        let { $providers = [], $imports = [] } = module;
-        for (let module of $imports) {
-            $providers = $providers.concat(this.collectProvider(module));
-        }
-        return $providers;
+        let { $providers = [] } = module;
+        this.injector = new StaticInjector($providers, `${module.name}`);
     }
 }
 /**

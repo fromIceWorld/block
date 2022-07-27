@@ -1,10 +1,12 @@
 import { EventEmitter } from '../../common/event/EventEmitter';
 import { ConstructortInterface, ObjectInterface } from '../../common/interface';
-import { InjectChanges, InjectKeys, InputKeys } from '../../decorators/index';
+import { InjectChanges, InputKeys } from '../../decorators/index';
+import { InjectToken } from '../../decorators/params/inject';
 import { InputChanges } from '../../decorators/prop/Input';
 import { EventChanges, EventKeys } from '../../decorators/prop/Output';
 import { StaticInjector } from '../../Injector/index';
 import { Hook } from '../../lifeCycle/index';
+import { moduleCore } from '../../platform/application';
 import { TViewIndex } from '../Enums/TView';
 import { elementNode } from './TNode/index';
 import { LogicView } from './TView/LogicView';
@@ -34,12 +36,12 @@ class TemplateDynamic extends Array {
     [TViewIndex.Injector]?: StaticInjector;
     [TViewIndex.Module]: any;
     [TViewIndex.InRange] = () => {
-        return this[TViewIndex.Module] && this[TViewIndex.Module]['moduleCore']
-            ? this[TViewIndex.Module]['moduleCore'].inRange || []
+        return this[TViewIndex.Module] && this[TViewIndex.Module][moduleCore]
+            ? this[TViewIndex.Module][moduleCore].inRange || []
             : this[TViewIndex.Parent]![TViewIndex.InRange];
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
-    [TViewIndex.EmbeddedView]: Array<ObjectInterface<any>> = new Array();
+    [TViewIndex.EmbeddedView]?: ObjectInterface<any>;
     constructor() {
         super();
         Object.setPrototypeOf(this, TemplateDynamic.prototype);
@@ -61,7 +63,7 @@ class TemplateDynamic extends Array {
         }
         let tNode = this[TViewIndex.TNode],
             { finAttributes } = tNode as elementNode,
-            inputKeys = this[TViewIndex.Class]!.prototype[InputKeys] || [],
+            inputKeys = this[TViewIndex.Context]![InputKeys] || [],
             inputChanges = this[TViewIndex.Context][InputChanges];
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>
@@ -100,33 +102,25 @@ class TemplateDynamic extends Array {
             };
         }
     }
-    // 实例化依赖注入到mid
-    InstanceInjects() {
-        // 根节点无
-        // if (!this[TViewIndex.TNode]) {
-        //     return;
-        // }
-        const injectKeys = this[TViewIndex.Context][InjectKeys] || [],
-            injectChanges = this[TViewIndex.Context][InjectChanges],
-            injector = this[TViewIndex.Injector];
-        for (let [key, provideToken] of Object.entries(injectKeys)) {
-            injectChanges[key] = {
-                currentValue: injector?.get(provideToken),
-            };
-        }
+    initDecoratorPropties() {
+        let ctx = this[TViewIndex.Context];
+        ctx[InputChanges] = Object.create({});
+        ctx[EventChanges] = Object.create({});
+        ctx[InjectToken] = [];
+        ctx[InjectChanges] = Object.create({});
+        this.updateInput();
+        this.createOutput();
     }
     // 将context 与@Input，@Output，@Inject合并
     mergeContextAndDecorators() {
-        let middleLayer = this[TViewIndex.Context],
-            context = new this[TViewIndex.Class]!();
-        Object.setPrototypeOf(context, middleLayer);
-        for (let cache of Object.getOwnPropertySymbols(middleLayer)) {
+        let ctx = this[TViewIndex.Context];
+        for (let cache of Object.getOwnPropertySymbols(ctx)) {
             for (let [key, value] of Object.entries(
-                middleLayer[cache] as ObjectInterface<any>
+                ctx[cache] as ObjectInterface<any>
             )) {
-                Object.defineProperty(context, key, {
+                Object.defineProperty(ctx, key, {
                     get() {
-                        return middleLayer[cache][key].currentValue;
+                        return ctx[cache][key].currentValue;
                     },
                     set(v) {
                         throw Error(
@@ -136,39 +130,20 @@ class TemplateDynamic extends Array {
                 });
             }
         }
-        this[TViewIndex.Context] = context;
     }
     /**
-     * 初始化组件的上下文，建立一个中间层
+     * 实例化组件/指令
      */
     initContext() {
-        let tNode = this[TViewIndex.TNode],
-            dir = this[TViewIndex.Class];
-        return insertMiddleLayer(dir!);
-    }
-    /**
-     * 合并初始化的context，@Input，@Output，@Inject。
-     */
-    createContext() {
-        this.updateInput();
-        this.createOutput();
-        this.InstanceInjects();
+        let dir = this[TViewIndex.Class]!,
+            tokens = dir[InjectToken] || [],
+            providers = tokens.map((token: any) =>
+                this[TViewIndex.Injector]?.get(token)
+            );
+        this[TViewIndex.Context] = new dir(...providers);
+        this.initDecoratorPropties();
         this.mergeContextAndDecorators();
     }
 }
-/**
- * 在context和 class之间建立一层中间层，存储input，output，inject数据
- *
- *
- * @param constructor 组件/指令的class
- * @param key
- */
-function insertMiddleLayer(constructor: ObjectInterface<any>) {
-    let upper = constructor.prototype,
-        middle = Object.create(upper);
-    middle[InputChanges] = Object.create({});
-    middle[EventChanges] = Object.create({});
-    middle[InjectChanges] = Object.create({});
-    return middle;
-}
-export { TemplateDynamic, offset, ViewMode, insertMiddleLayer };
+
+export { TemplateDynamic, offset, ViewMode };

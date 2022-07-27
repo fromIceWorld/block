@@ -1,7 +1,7 @@
 import { ObjectInterface } from '../../../common/interface';
 import { AttributeType } from '../../Enums/attributeType';
 import { elementType } from '../../Enums/index';
-import { embeddedView, viewContainer } from '../embedded/index';
+import { embeddedView, ViewContainer } from '../embedded/index';
 import { TemplateView } from '../TView/TemplateView';
 
 abstract class TNode {
@@ -21,7 +21,7 @@ class elementNode extends TNode {
     component?: Function;
     children: number[] = [];
     parent: number = -1;
-    TView?: TemplateView | viewContainer | embeddedView;
+    TView?: TemplateView | ViewContainer | embeddedView;
     finAttributes: ObjectInterface<any>;
     constructor(
         tagName: string,
