@@ -1,11 +1,11 @@
 class Router {
-    static hash: string = '';
-    static subscribers: Array<any> = [];
+    hash: string = '';
+    subscribers: Array<any> = [];
     constructor() {
         this.listenHashChange();
     }
     listenHashChange() {
-        let router = Router;
+        let router = this;
         window.addEventListener(
             'hashchange',
             function ($e) {
@@ -20,7 +20,10 @@ class Router {
             false
         );
     }
-    static subscribe(com) {
+    getHashs() {
+        return this.hash.split('/');
+    }
+    subscribe(com) {
         this.subscribers.push(com);
     }
 }

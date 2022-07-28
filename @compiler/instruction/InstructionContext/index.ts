@@ -385,7 +385,7 @@ function resolveDirective(tagName: string, index: number) {
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index] as elementNode;
     let { attributes, directives } = TNode;
-    const InRanges = TView[TViewIndex.InRange]();
+    const InRanges = TView[TViewIndex.InRange]() || [];
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
         if (v == null) {

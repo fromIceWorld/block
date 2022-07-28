@@ -33,7 +33,7 @@ import { Component } from '../decorators/index';
 
         <!-- 注释信息-->
         <h1 style="background:yellow">下面是路由：</h1>
-        <router-view *route="exp2"></router-view>`,
+        <router-view></router-view>`,
 })
 class MyComponent {
     exp = '第一个插值';

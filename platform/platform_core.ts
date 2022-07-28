@@ -2,8 +2,10 @@ import { compiler } from '../@compiler/compile/index';
 import { Instruction } from '../@compiler/instruction/index';
 import { TViewFns } from '../@compiler/instruction/InstructionContext/index';
 import { ParseTemplate } from '../@compiler/parse/index';
+import { ViewContainer } from '../@compiler/template/embedded/index';
+import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { Injector, StaticProvider } from '../Injector/index';
-import { PlatformRef } from './application';
+import { Application, PlatformRef } from './application';
 
 /**
  * 平台提供依赖：
@@ -12,6 +14,8 @@ import { PlatformRef } from './application';
 
 const CORE_PROVIDES: StaticProvider[] = [
     { provide: PlatformRef, deps: [Injector], useClass: PlatformRef },
+    { provide: TemplateView, useValue: TemplateView },
+    { provide: ViewContainer, useValue: ViewContainer },
     {
         provide: compiler,
         deps: [ParseTemplate, Instruction, TViewFns],
@@ -32,6 +36,7 @@ const CORE_PROVIDES: StaticProvider[] = [
         useValue: TViewFns,
     },
     { provide: Injector, deps: [], useClass: Injector },
+    { provide: Application, deps: [], useClass: Application },
 ];
 const PlatformCore = CORE_PROVIDES;
 export { PlatformCore };

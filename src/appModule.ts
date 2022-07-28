@@ -1,4 +1,3 @@
-import { ViewContainer } from '../@compiler/template/embedded/index';
 import { Module } from '../decorators/index';
 import { ChilComponent } from './childComponent';
 import { demoComponent } from './demo';
@@ -6,8 +5,8 @@ import { firstDirective } from './firstDirective';
 import { forof } from './forOf';
 import { bIf } from './if';
 import { MyComponent } from './myComponent';
-import { Router } from './routerModule/router';
-import { RouterView } from './routerModule/router-view';
+import { RouterModule } from './routerModule/index';
+import { TestComponent } from './test';
 @Module({
     declarations: [
         MyComponent,
@@ -16,18 +15,15 @@ import { RouterView } from './routerModule/router-view';
         firstDirective,
         forof,
         bIf,
-        RouterView,
+        TestComponent,
     ],
-    providers: [
-        { provide: ViewContainer, useValue: ViewContainer },
-        { provide: Router, useValue: Router },
-    ],
-    imports: [],
+    providers: [],
+    imports: [RouterModule],
     exports: [],
     routes: [
         {
-            path: 'demo',
-            component: MyComponent,
+            path: 'test',
+            component: TestComponent,
         },
     ],
     bootstrap: [MyComponent],

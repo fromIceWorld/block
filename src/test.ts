@@ -3,6 +3,7 @@ import { Component } from '../decorators/index';
     selector: `test`,
     styles: ``,
     template: `<div>hello test</div>`,
+    providers: [],
 })
 class TestComponent {
     constructor() {}

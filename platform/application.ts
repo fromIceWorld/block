@@ -3,10 +3,9 @@ import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { resolveSelector } from '../common/selector';
 import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
 import { Route } from '../src/routerModule/Enums/route';
-import { Router } from '../src/routerModule/router';
 
 const componentFromModule = '$$_Bind_Module',
-    moduleCore: string = '$$_Module_Core';
+    registerApplication: string = '$$_Register_Application';
 /**
  * 平台是顶级作用域，下级是应用，应用下注册模块，
  * 模块下的组件构成视图。
@@ -19,25 +18,26 @@ const componentFromModule = '$$_Bind_Module',
  */
 class PlatformRef {
     injector;
-    applications: Set<Application> = new Set();
+    application: Application;
     constructor(injector: StaticInjector) {
         this.injector = injector;
+        this.application = this.injector.get(Application);
     }
     /**
      *平台引导 module
      * @param module 根模块
      */
     bootstrapModule(module: any) {
-        let { $bootstrap } = module;
-        let app = new Application();
-        app.registerModule(module);
-        this.applications.add(app);
+        let { $bootstrap, $routes } = module;
         if ($bootstrap.length > 0) {
-            this.bootstrapComponent($bootstrap[0], app);
+            this.application.registerModule(module);
+            if ($routes) {
+                this.application.registerRoutes(module);
+            }
+            this.bootstrapComponent($bootstrap[0], this.application);
             // app['rootTView']?.detectChanges();
         }
     }
-    bootstrapRoutes() {}
     /**
      *平台调用 视图部分API，将组件挂载到view上
      *
@@ -65,6 +65,7 @@ class Application {
     inRange: Array<any> = [];
     rootTView?: TemplateView;
     routesTree: Map<string, Map<string, any>> = new Map();
+    router: Router;
     collectDeclarations(module: any) {
         let { $declarations = [], $imports } = module,
             partDeclarations = [...$declarations];
@@ -73,22 +74,23 @@ class Application {
         }
         return partDeclarations;
     }
-    bootstrapRouter() {
-        new Router();
-    }
     resolveRoutes(routes: Route[], pre: Map<string, any>) {
-        if (!pre.has('children')) {
-            pre.set('children', []);
-        }
         for (let route of routes) {
             let { path, component, loadChildren, children = [] } = route,
                 config = new Map();
             config.set('path', path);
             config.set('component', component);
+            config.set('loadChildren', loadChildren);
             this.resolveRoutes(children, config);
-            pre.get('children').push(config);
+            pre.has('children')
+                ? pre.get('children').push(config)
+                : pre.set('children', new Map([[path, config]]));
         }
         return pre;
+    }
+    registerRoutes(module: any) {
+        let { $routes } = module;
+        this.resolveRoutes($routes, this.routesTree);
     }
     registerModule(module: any) {
         let {
@@ -97,9 +99,8 @@ class Application {
             $exports = [],
             $providers = [],
             $bootstrap = [],
-            $routes = [],
         } = module;
-        module[moduleCore] = this;
+        module[registerApplication] = this;
         this.collectAndRegisterProvider(module);
         for (let declaration of $declarations) {
             declaration.chooser = resolveSelector(declaration.selector);
@@ -120,11 +121,6 @@ class Application {
             $providers,
             $bootstrap,
         });
-        if ($routes) {
-            let routesTree = this.resolveRoutes($routes, new Map());
-            console.log(routesTree);
-            this.bootstrapRouter();
-        }
         for (let depModule of $imports) {
             let exports = this.registerModule(depModule);
             this.inRange = [...this.inRange, ...exports]; //收集依附模块暴露出的组件/指令/pipe
@@ -161,6 +157,7 @@ export {
     PlatformRef,
     collectRunDependency,
     createPlatform,
-    moduleCore,
+    Application,
     componentFromModule,
+    registerApplication,
 };
