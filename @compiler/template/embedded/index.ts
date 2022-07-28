@@ -35,9 +35,12 @@ class ViewContainer extends TemplateDynamic {
         this.injectProviders();
         this[TViewIndex.Context] = this.currentTView[TViewIndex.Context];
         this[TViewIndex.EmbeddedView] = this.initContext();
+        this.updateInput(this[TViewIndex.EmbeddedView]);
+        this.createOutput(this[TViewIndex.EmbeddedView]);
+        this.mergeContextAndDecorators(this[TViewIndex.EmbeddedView]);
     }
     attach() {
-        this.updateInput();
+        this.updateInput(this[TViewIndex.EmbeddedView]);
         // Hook(
         //     this[TViewIndex.EmbeddedView]!,
         //     'OnInputChanges',
@@ -46,7 +49,7 @@ class ViewContainer extends TemplateDynamic {
     }
     detectChanges() {
         TViewFns.pushContext(this);
-        this.updateInput();
+        this.updateInput(this[TViewIndex.EmbeddedView]);
         let views = this[TViewIndex.EmbeddedView].OnInputChanges(
             this[TViewIndex.EmbeddedView][InputChanges]
         );
@@ -119,7 +122,7 @@ class embeddedView extends TemplateDynamic {
     }
     detectChanges() {
         TViewFns.pushContext(this);
-        this.updateInput();
+        this.updateInput(this[TViewIndex.Context]);
         this.def.template(ViewMode.update, this[TViewIndex.Context]);
         const directives = this[TViewIndex.Directives],
             children = this[TViewIndex.Children];

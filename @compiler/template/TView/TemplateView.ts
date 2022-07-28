@@ -36,6 +36,9 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.Parent] = parent;
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
+        this.updateInput(this[TViewIndex.Context]);
+        this.createOutput(this[TViewIndex.Context]);
+        this.mergeContextAndDecorators(this[TViewIndex.Context]);
     }
     private $getDefinition: any = (() => {
         return () => {
@@ -51,6 +54,7 @@ class TemplateView extends TemplateDynamic {
     })();
     attach(): void {
         TViewFns.pushContext(this);
+        this.updateInput(this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
@@ -79,7 +83,7 @@ class TemplateView extends TemplateDynamic {
     }
     detectChanges(): void {
         TViewFns.pushContext(this);
-        this.updateInput();
+        this.updateInput(this[TViewIndex.Context]);
         let def = this.$getDefinition(),
             children = this[TViewIndex.Children];
         def && def.template(ViewMode.update, this[TViewIndex.Context]);

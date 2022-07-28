@@ -1,5 +1,4 @@
-import { Component, Inject } from '../decorators/index';
-import { Router } from './routerModule/router';
+import { Component } from '../decorators/index';
 @Component({
     selector: `#root`,
     styles: ``,
@@ -37,7 +36,6 @@ import { Router } from './routerModule/router';
         <router-view *route="exp2"></router-view>`,
 })
 class MyComponent {
-    @Inject(Router) router;
     exp = '第一个插值';
     displayIf: boolean = true;
     exp2 = '第2个插值';

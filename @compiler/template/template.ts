@@ -56,15 +56,15 @@ class TemplateDynamic extends Array {
      * 处理 input 属性,新旧属性更新
      *
      */
-    updateInput() {
+    updateInput(ctx) {
         // 根节点无
         if (!this[TViewIndex.TNode]) {
             return;
         }
         let tNode = this[TViewIndex.TNode],
             { finAttributes } = tNode as elementNode,
-            inputKeys = this[TViewIndex.Context]![InputKeys] || [],
-            inputChanges = this[TViewIndex.Context][InputChanges];
+            inputKeys = ctx![InputKeys] || [],
+            inputChanges = ctx[InputChanges];
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>
         )) {
@@ -80,17 +80,16 @@ class TemplateDynamic extends Array {
                 firstChange,
             };
         }
-        Hook(this[TViewIndex.Context], 'OnInputChanges', inputChanges);
+        Hook(ctx, 'OnInputChanges', inputChanges);
     }
     // 处理output事件,将 EventEmitter,添加到 mid层，方便emit
-    createOutput() {
+    createOutput(ctx) {
         // 根节点无
         if (!this[TViewIndex.TNode]) {
             return;
         }
         let host = this[TViewIndex.Host],
-            outputKeys: ObjectInterface<string> =
-                this[TViewIndex.Context][EventKeys] || [],
+            outputKeys: ObjectInterface<string> = ctx[EventKeys] || [],
             outputEventObj = Object.create({});
         for (let [key, type] of Object.entries(outputKeys)) {
             outputEventObj[key] = {
@@ -102,17 +101,8 @@ class TemplateDynamic extends Array {
             };
         }
     }
-    initDecoratorPropties() {
-        let ctx = this[TViewIndex.Context];
-        ctx[InputChanges] = Object.create({});
-        ctx[EventChanges] = Object.create({});
-        ctx[InjectToken] = [];
-        this.updateInput();
-        this.createOutput();
-    }
     // 将context 与@Input，@Output，@Inject合并
-    mergeContextAndDecorators() {
-        let ctx = this[TViewIndex.Context];
+    mergeContextAndDecorators(ctx: any) {
         for (let cache of Object.getOwnPropertySymbols(ctx)) {
             for (let [key, value] of Object.entries(
                 ctx[cache] as ObjectInterface<any>
@@ -140,9 +130,10 @@ class TemplateDynamic extends Array {
                 this[TViewIndex.Injector]?.get(token)
             ),
             ctx = new dir(...providers);
-        this[TViewIndex.Context] = ctx;
-        this.initDecoratorPropties();
-        this.mergeContextAndDecorators();
+        ctx[InputChanges] = Object.create({});
+        ctx[EventChanges] = Object.create({});
+        ctx[InjectToken] = [];
+
         return ctx;
     }
 }

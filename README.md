@@ -273,7 +273,14 @@ router
     
 ```
 
+## 组件-指令的渲染上下文
 
+```typescript
+`组件`:是组件实例 + @Input + @Inject + @Output
+`结构性指令`:所在指令的context及一个虚拟上下文[index,item]。【与指令的生命周期分开讨论】
+		   `指令的实例只用作生命周期`
+`属性性指令`:不渲染，因此与context无关
+```
 
 # TODO
 

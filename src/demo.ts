@@ -1,12 +1,11 @@
-import { compiler } from '../@compiler/compile/index';
 import { EventEmitter } from '../common/event/EventEmitter';
-import { Component, Inject, Input, Output } from '../decorators/index';
+import { Component, Input, Output } from '../decorators/index';
 @Component({
     selector: `app-demo`,
     template: `
         <h1>-------------------demoComponent-----------start-------------</h1>
         app-demo组件: {{ desc }}
-        <div *forOf="arrs" *if="item >= 2">
+        <div *forOf="arrs" item="item" index="index" *if="item >= 2">
             <span> {{ item }}: [app-demo]{{ desc }}, </span>
             从上级组件获取的值{{ childValue }}
         </div>
@@ -16,7 +15,6 @@ import { Component, Inject, Input, Output } from '../decorators/index';
     styles: '',
 })
 class demoComponent {
-    @Inject(compiler) injectorCompiler: any;
     @Input('value') childValue: string;
     @Output('childEmit')
     arrs = [0, 1, 2, 3];

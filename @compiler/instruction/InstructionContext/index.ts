@@ -414,15 +414,6 @@ function resolveDirective(tagName: string, index: number) {
         }
     }
 }
-function instanceDirective(
-    directive: ObjectConstructor,
-    native: Element,
-    tNode: elementNode
-) {
-    let context = new directive();
-    Hook(context, 'OnInit', native, tNode);
-    return context;
-}
 function updateDirective(context: ObjectInterface<any>, tNode: elementNode) {
     let { finAttributes } = tNode,
         inputKeys = (context as ObjectInterface<any>)[InputKeys] || [],

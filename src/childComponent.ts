@@ -1,6 +1,5 @@
-import { compiler } from '../@compiler/compile/index';
 import { EventEmitter } from '../common/event/EventEmitter';
-import { Component, Inject, Input, Output } from '../decorators/index';
+import { Component, Input, Output } from '../decorators/index';
 @Component({
     selector: `app-child`,
     template: `
@@ -8,6 +7,8 @@ import { Component, Inject, Input, Output } from '../decorators/index';
         app-child组件: {{ desc }}
         <div
             *forOf="arr"
+            item="item"
+            index="index"
             style="width: 100px;
                     padding: 10px 15px;
                     border-radius: 6px;
@@ -20,6 +21,8 @@ import { Component, Inject, Input, Output } from '../decorators/index';
         <app-demo
             &value="parentValue"
             *forOf="arr"
+            item="item"
+            index="index"
             &style="{color:item.color}"
         ></app-demo>
         <p>my-component value:{{ parentValue }}</p>
@@ -30,7 +33,6 @@ import { Component, Inject, Input, Output } from '../decorators/index';
     styles: '',
 })
 class ChilComponent {
-    @Inject(compiler) injectorCompiler: any;
     @Input('value') parentValue?: string;
     @Output('childEmit')
     arr = [
