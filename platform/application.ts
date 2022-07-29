@@ -5,7 +5,8 @@ import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
 import { Route } from '../src/routerModule/Enums/route';
 
 const componentFromModule = '$$_Bind_Module',
-    registerApplication: string = '$$_Register_Application';
+    registerApplication: string = '$$_Register_Application',
+    routeConfig = '$$_Route_Config';
 /**
  * 平台是顶级作用域，下级是应用，应用下注册模块，
  * 模块下的组件构成视图。
@@ -64,8 +65,7 @@ class Application {
     injector?: Injector;
     inRange: Array<any> = [];
     rootTView?: TemplateView;
-    routesTree: Map<string, Map<string, any>> = new Map();
-    router: Router;
+    routesTree: Map<RegExp, Map<RegExp, any>> = new Map();
     collectDeclarations(module: any) {
         let { $declarations = [], $imports } = module,
             partDeclarations = [...$declarations];
@@ -74,23 +74,37 @@ class Application {
         }
         return partDeclarations;
     }
-    resolveRoutes(routes: Route[], pre: Map<string, any>) {
+    resolveRoutes(
+        routes: Route[],
+        parent: Map<RegExp, any>,
+        preRegExp: string[]
+    ) {
         for (let route of routes) {
             let { path, component, loadChildren, children = [] } = route,
-                config = new Map();
-            config.set('path', path);
-            config.set('component', component);
-            config.set('loadChildren', loadChildren);
-            this.resolveRoutes(children, config);
-            pre.has('children')
-                ? pre.get('children').push(config)
-                : pre.set('children', new Map([[path, config]]));
+                next = new Map();
+            let paths = path.split('/'),
+                resolved = [],
+                pathRegExp: RegExp;
+            for (let p of paths) {
+                if (p.startsWith(':')) {
+                    resolved.push('([^/]+)');
+                } else {
+                    resolved.push(`${p}`);
+                }
+            }
+            pathRegExp = new RegExp([...preRegExp, ...resolved].join('/'));
+            parent.set(pathRegExp, next);
+            next.set(routeConfig, {
+                reg: component,
+                loadChildren,
+            });
+            this.resolveRoutes(children, next, [...preRegExp, ...resolved]);
         }
-        return pre;
+        return parent;
     }
     registerRoutes(module: any) {
         let { $routes } = module;
-        this.resolveRoutes($routes, this.routesTree);
+        this.resolveRoutes($routes, this.routesTree, ['']);
     }
     registerModule(module: any) {
         let {

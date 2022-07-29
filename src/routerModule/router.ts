@@ -20,8 +20,8 @@ class Router {
             false
         );
     }
-    getHashs() {
-        return this.hash.split('/');
+    getHash() {
+        return this.hash;
     }
     subscribe(com) {
         this.subscribers.push(com);

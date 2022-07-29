@@ -33,27 +33,30 @@ class RouterView {
     detectChanges() {
         console.log('router-view监听到hash更改');
         console.log('获取hashs', this.router.getHashs());
-        let tree = this.app.routesTree.get('children'),
-            hashArr = this.router.getHashs(),
-            count = 0;
-        while (count <= this.deep) {
-            if (tree?.has(hashArr[count])) {
-                tree = tree.get(hashArr[count]);
-                count++;
-            } else {
-                console.log('未找到匹配的路由');
-                break;
+        let tree = this.app.routesTree,
+            hash = this.router.getHash(),
+            count = 0,
+            match = false;
+        while (count < this.deep) {
+            for (let pathRegExp of tree.keys()) {
+                let matchResult = hash.match(pathRegExp);
+                if (matchResult) {
+                    console.log('路由匹配：', matchResult);
+                }
             }
         }
-        let component = tree?.get('component'),
-            tView = new TemplateView(
-                component,
-                undefined,
-                this.native,
-                this.parentTView
-            );
-        console.log('路由匹配渲染：', tView);
-        tView.attach();
+        console.log('router-view的路由', this.app.routesTree);
+        if (match) {
+            let component = tree?.get('component'),
+                tView = new TemplateView(
+                    component,
+                    undefined,
+                    this.native,
+                    this.parentTView
+                );
+            console.log('路由匹配渲染：', tView);
+            tView.attach();
+        }
     }
 }
 export { RouterView };

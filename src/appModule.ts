@@ -22,7 +22,17 @@ import { TestComponent } from './test';
     exports: [],
     routes: [
         {
-            path: 'test',
+            path: 'demo',
+            component: TestComponent,
+            children: [
+                {
+                    path: 'demoTest1',
+                    component: TestComponent,
+                },
+            ],
+        },
+        {
+            path: 'test/:user',
             component: TestComponent,
         },
     ],
