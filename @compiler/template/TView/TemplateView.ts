@@ -104,6 +104,21 @@ class TemplateView extends TemplateDynamic {
         Hook(this[TViewIndex.Context], 'OnViewChecked');
         TViewFns.popContext();
     }
+    // Tview 不应该被展示，也不想被销毁时，可以进行休眠。
+    sleep() {
+        console.log('该去休眠了');
+    }
+    destroyed() {
+        TViewFns.pushContext(this);
+        this[TViewIndex.Context].OnDestroy();
+        let children = this[TViewIndex.Children];
+        for (let child of children) {
+            let tNode = this[child + offset];
+            tNode['TView'].detectChanges();
+        }
+        Hook(this[TViewIndex.Context], 'OnDestroy');
+        TViewFns.popContext();
+    }
 }
 
 export { TemplateView };

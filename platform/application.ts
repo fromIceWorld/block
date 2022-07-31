@@ -66,6 +66,7 @@ class Application {
     inRange: Array<any> = [];
     rootTView?: TemplateView;
     routesTree: Map<RegExp, Map<RegExp, any>> = new Map();
+    currentRouteBranch: Map<RegExp, Map<RegExp, any>> = this.routesTree;
     collectDeclarations(module: any) {
         let { $declarations = [], $imports } = module,
             partDeclarations = [...$declarations];
@@ -92,10 +93,10 @@ class Application {
                     resolved.push(`${p}`);
                 }
             }
-            pathRegExp = new RegExp([...preRegExp, ...resolved].join('/'));
+            pathRegExp = new RegExp([...preRegExp, ...resolved].join(`\/`));
             parent.set(pathRegExp, next);
             next.set(routeConfig, {
-                reg: component,
+                component,
                 loadChildren,
             });
             this.resolveRoutes(children, next, [...preRegExp, ...resolved]);
@@ -105,6 +106,8 @@ class Application {
     registerRoutes(module: any) {
         let { $routes } = module;
         this.resolveRoutes($routes, this.routesTree, ['']);
+        this.currentRouteBranch = this.routesTree;
+        console.log('解析后的route树：', this.routesTree);
     }
     registerModule(module: any) {
         let {
@@ -174,4 +177,5 @@ export {
     Application,
     componentFromModule,
     registerApplication,
+    routeConfig,
 };

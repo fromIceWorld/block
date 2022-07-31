@@ -1,5 +1,8 @@
 import { Module } from '../decorators/index';
 import { ChilComponent } from './childComponent';
+import { IronComponent } from './components/iron';
+import { SpiderComponent } from './components/spider';
+import { Spider2Component } from './components/spider2';
 import { demoComponent } from './demo';
 import { firstDirective } from './firstDirective';
 import { forof } from './forOf';
@@ -22,8 +25,8 @@ import { TestComponent } from './test';
     exports: [],
     routes: [
         {
-            path: 'demo',
-            component: TestComponent,
+            path: 'iron',
+            component: IronComponent,
             children: [
                 {
                     path: 'demoTest1',
@@ -32,8 +35,14 @@ import { TestComponent } from './test';
             ],
         },
         {
-            path: 'test/:user',
-            component: TestComponent,
+            path: 'spider',
+            component: SpiderComponent,
+            children: [
+                {
+                    path: ':userId',
+                    component: Spider2Component,
+                },
+            ],
         },
     ],
     bootstrap: [MyComponent],

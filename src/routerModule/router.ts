@@ -11,7 +11,9 @@ class Router {
             function ($e) {
                 let newHash = location.hash.substring(1),
                     paths = newHash.split('/');
-                console.log('The hash has changed!', router.hash, paths);
+                console.log(
+                    `The hash has changed! from ${router.hash} to ${newHash}`
+                );
                 router.hash = newHash;
                 router.subscribers.forEach((com) => {
                     com.detectChanges();

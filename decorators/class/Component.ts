@@ -4,7 +4,7 @@ interface ComponentParams {
     selector: string;
     styles: string;
     template: string;
-    providers: StaticProvider[];
+    providers?: StaticProvider[];
 }
 
 function Component(params: ComponentParams) {
