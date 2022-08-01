@@ -85,13 +85,18 @@ function createNative(tNode: elementNode, index: number) {
     }
     if (tagName == 'slot') {
         let slotsIndex = TView[TViewIndex.Slots],
-            filters,
+            filters = [],
             slotsDOM = slotsIndex.map(
                 (index: number) => parentTView[TViewIndex.LView][index + offset]
             );
         filters = slotsDOM.filter(
-            (d: Element) => d.getAttribute('slot') == slotName
+            (d: Element) =>
+                (slotName &&
+                    d.nodeType == elementType.Element &&
+                    d.getAttribute('slot') == slotName) ||
+                (!slotName && d.nodeType == elementType.Text)
         );
+
         dom.append(...filters);
     } else {
     }
@@ -396,8 +401,7 @@ function resolveDirective(tagName: string, index: number) {
                 TNode['TView'] = new TemplateView(
                     TNode.component,
                     TNode,
-                    native,
-                    TView
+                    native
                 );
             }
         } else {

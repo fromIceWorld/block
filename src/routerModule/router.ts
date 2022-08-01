@@ -1,3 +1,5 @@
+import { cache } from './router-view';
+
 class Router {
     hash: string = '';
     subscribers: Array<any> = [];
@@ -5,6 +7,7 @@ class Router {
         this.listenHashChange();
     }
     listenHashChange() {
+        this.hash = location.hash.substring(1);
         let router = this;
         window.addEventListener(
             'hashchange',
@@ -18,6 +21,7 @@ class Router {
                 router.subscribers.forEach((com) => {
                     com.detectChanges();
                 });
+                cache.deep = 1;
             },
             false
         );

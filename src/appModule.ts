@@ -19,6 +19,8 @@ import { TestComponent } from './test';
         forof,
         bIf,
         TestComponent,
+        IronComponent,
+        SpiderComponent,
     ],
     providers: [],
     imports: [RouterModule],
@@ -29,7 +31,7 @@ import { TestComponent } from './test';
             component: IronComponent,
             children: [
                 {
-                    path: 'demoTest1',
+                    path: 'mark5',
                     component: TestComponent,
                 },
             ],

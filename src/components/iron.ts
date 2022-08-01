@@ -2,7 +2,8 @@ import { Component } from '../../decorators/index';
 @Component({
     selector: `iron`,
     styles: ``,
-    template: `<div>钢铁侠</div>`,
+    template: `<div>钢铁侠</div>
+        <router-view></router-view>`,
     providers: [],
 })
 class IronComponent {

@@ -105,10 +105,9 @@ class ParseTemplate {
         let closed = this.matchString('>');
         if (closed) {
             let { index, nextColumn, nextRow } = closed;
-            let closeTagName = this.template.substring(
-                this.startIndex + 2,
-                index
-            );
+            let closeTagName = this.template
+                .substring(this.startIndex + 2, index)
+                .trim();
             this.row = nextRow;
             this.column = nextColumn;
             this.startIndex = index + 1;

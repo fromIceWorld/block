@@ -66,6 +66,7 @@ class Application {
     inRange: Array<any> = [];
     rootTView?: TemplateView;
     routesTree: Map<RegExp, Map<RegExp, any>> = new Map();
+    routesStack: any[] = [this.routesTree];
     currentRouteBranch: Map<RegExp, Map<RegExp, any>> = this.routesTree;
     collectDeclarations(module: any) {
         let { $declarations = [], $imports } = module,

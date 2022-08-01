@@ -21,8 +21,7 @@ class TemplateView extends TemplateDynamic {
     constructor(
         component: ConstructortInterface,
         tNode?: elementNode,
-        host = θd.createElement('template').content!,
-        parent?: TemplateView
+        host = θd.createElement('template').content!
     ) {
         super();
         Object['setPrototypeOf'](this, TemplateView.prototype);
@@ -33,7 +32,7 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.Module] = component.hasOwnProperty(componentFromModule)
             ? (component as any)[componentFromModule]
             : null;
-        this[TViewIndex.Parent] = parent;
+        this[TViewIndex.Parent] = TViewFns.currentTView();
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
         this.updateInput(this[TViewIndex.Context]);
