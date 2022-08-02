@@ -93,8 +93,11 @@
             for (let [key, value] of Object.entries(styleMap)) {
                 let row = document.createElement('div'),
                     keyNative = document.createElement('div'),
-                    colon = new Text(' :  '),
+                    colon = document.createElement('span'),
                     valueNative = document.createElement('div');
+                row.setAttribute('class', 'config-row');
+                colon.setAttribute('class', 'config-colon');
+                colon.appendChild(new Text(' :  '));
                 keyNative.setAttribute('class', 'style-key');
                 valueNative.setAttribute('class', 'style-value');
                 valueNative.addEventListener('dblclick', (e) => {
@@ -193,6 +196,12 @@
     );
 </script>
 <style>
+    .config-colo {
+        margin: 0 2px;
+    }
+    .config-row {
+        display: flex;
+    }
     #block .dropzone {
         border: 0.5px dashed #766fd0;
     }
@@ -202,11 +211,11 @@
     }
     .style-value {
         display: inline-block;
-        width: 80%;
     }
     .style-value > input {
         border: none;
-        width: 100%;
+        /* width: 100%; */
+        margin: 0 2px;
     }
     .style-value > input:focus {
         outline: none;
