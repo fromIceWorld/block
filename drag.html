@@ -1,69 +1,130 @@
-<div id="up-menu">
-    <div
-        id="draggable"
-        draggable="true"
-        ondragstart="event.dataTransfer.setData('text/plain',null)"
-    >
-        This div is draggable
+<div>
+    <div class="left-menu">
+        <div
+            id="origin"
+            draggable="true"
+            ondragstart="event.dataTransfer.setData('text/plain',null)"
+        >
+            <div
+                id="block"
+                style="height: 100%; width: 100%; display: flex"
+                title="flex 1:2"
+            >
+                <div style="flex: 1" class="dropzone"></div>
+                <div style="flex: 2" class="dropzone"></div>
+            </div>
+        </div>
+
+        <div
+            id="origin"
+            draggable="true"
+            ondragstart="event.dataTransfer.setData('text/plain',null)"
+        >
+            <div
+                id="block"
+                style="
+                    height: 100%;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                "
+                title="flex 1:2"
+            >
+                <div style="flex: 1" class="dropzone"></div>
+                <div style="flex: 2" class="dropzone"></div>
+            </div>
+        </div>
+    </div>
+    <div class="right-menu">
+        <!-- <div class="top-menu"></div> -->
+        <div class="dropzone"></div>
     </div>
 </div>
-<div id="right-menu"></div>
-<div id="bottom-menu"></div>
-<div id="left-menu"></div>
-<div id="preview" title="展示区" style="width: 100%; height: 100%">
-    <div class="dropzone"></div>
-    <div class="dropzone"></div>
-    <div class="dropzone"></div>
-    <div class="dropzone"></div>
-    <div class="dropzone"></div>
+<div class="config-menu">
+    <div class="close">
+        <span>o</span>
+    </div>
+    <div class="tabs">
+        <span class="tab">styles</span>
+    </div>
+    <div class="tab-body"></div>
 </div>
-<style>
-    ::-webkit-scrollbar {
-        width: 4px;
-        border-radius: 50%;
-    }
-    ::-webkit-scrollbar-track {
-        background-color: #bee1eb;
-    }
-    ::-webkit-scrollbar-thumb {
-        background-color: #00aff0;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background-color: #9c3;
-    }
-    ::-webkit-scrollbar-thumb:active {
-        background-color: #00aff0;
-    }
-
-    body {
-        margin: 0;
-    }
-    #up-menu {
-        width: 100%;
-        height: 100px;
-        position: absolute;
-        top: 0;
-        background-color: #7e7ef214;
-    }
-    #draggable {
-        width: 200px;
-        height: 20px;
-        text-align: center;
-        background: white;
-    }
-
-    .dropzone {
-        width: 200px;
-        height: 20px;
-        background: blueviolet;
-        margin-bottom: 10px;
-        padding: 10px;
-    }
-</style>
-
 <script>
-    var dragged;
-
+    var dragged,
+        mouse = false,
+        focusBlock,
+        focusStyle,
+        styles,
+        configMenu = document.getElementsByClassName('config-menu')[0],
+        closeBtn = document.getElementsByClassName('close')[0],
+        tabBody = document.getElementsByClassName('tab-body')[0];
+    closeBtn.addEventListener('click', function (event) {
+        if (configMenu) {
+            configMenu.attributeStyleMap.set('width', '0');
+            configMenu = undefined;
+        } else {
+            configMenu = document.getElementsByClassName('config-menu')[0];
+            configMenu.attributeStyleMap.set('width', '200px');
+        }
+    });
+    /* 点击聚焦 */
+    document.addEventListener(
+        'click',
+        function (event) {
+            if (event.target.className !== 'dropzone') {
+                return;
+            }
+            if (focusBlock) {
+                focusBlock.style.border = '0.5px dashed #766fd0';
+            }
+            focusBlock = event.target;
+            focusBlock.style.border = '0.5px dashed red';
+            let styleString = focusBlock.getAttribute('style'),
+                styles = styleString.split(';'),
+                styleMap = {};
+            styles.forEach((item) => {
+                if (!item) {
+                    return;
+                }
+                let [key, value] = item.split(':');
+                styleMap[key.trim()] = value.trim();
+            });
+            tabBody.replaceChildren();
+            for (let [key, value] of Object.entries(styleMap)) {
+                let row = document.createElement('div'),
+                    keyNative = document.createElement('div'),
+                    colon = new Text(' :  '),
+                    valueNative = document.createElement('div');
+                keyNative.setAttribute('class', 'style-key');
+                valueNative.setAttribute('class', 'style-value');
+                valueNative.addEventListener('dblclick', (e) => {
+                    let tar = e.target,
+                        text = tar.childNodes[0],
+                        input = document.createElement('input');
+                    input.value = text.nodeValue;
+                    input.setAttribute('autofocus', 'autofocus');
+                    // input.focus();
+                    input.addEventListener('blur', (e) => {
+                        text.nodeValue = input.value;
+                        input.replaceWith(text);
+                        styleMap[key] = text.nodeValue;
+                        focusBlock.setAttribute(
+                            'style',
+                            Object.entries(styleMap)
+                                .map(([k, v]) => `${k}:${v}`)
+                                .join(';')
+                        );
+                    });
+                    tar.replaceChildren(input);
+                });
+                keyNative.appendChild(new Text(key));
+                valueNative.appendChild(new Text(value));
+                row.append(keyNative, colon, valueNative);
+                tabBody.append(row);
+            }
+        },
+        false
+    );
     /* 拖动目标元素时触发 drag 事件 */
     document.addEventListener('drag', function (event) {}, false);
 
@@ -101,9 +162,6 @@
         'dragenter',
         function (event) {
             // 当可拖动的元素进入可放置的目标时高亮目标节点
-            if (event.target.className == 'dropzone') {
-                event.target.style.background = 'purple';
-            }
         },
         false
     );
@@ -127,10 +185,117 @@
             // 将拖动的元素到所选择的放置目标节点中
             if (event.target.className == 'dropzone') {
                 event.target.style.background = '';
-                dragged.parentNode.removeChild(dragged);
-                event.target.appendChild(dragged);
+                let newNode = dragged.cloneNode(true);
+                event.target.append(...newNode.childNodes);
             }
         },
         false
     );
 </script>
+<style>
+    #block .dropzone {
+        border: 0.5px dashed #766fd0;
+    }
+    .style-key {
+        color: #e75200;
+        display: inline-block;
+    }
+    .style-value {
+        display: inline-block;
+        width: 80%;
+    }
+    .style-value > input {
+        border: none;
+        width: 100%;
+    }
+    .style-value > input:focus {
+        outline: none;
+    }
+    body {
+        overflow: hidden;
+    }
+    .close {
+        position: absolute;
+        top: 50%;
+        left: -12px;
+        cursor: pointer;
+    }
+    .tabs {
+        padding-top: 6px;
+        margin-bottom: 14px;
+    }
+    .tab-body {
+        font-size: 14px;
+        padding: 0 4px;
+    }
+    .tab {
+        border-bottom: 2px solid blue;
+        padding: 5px;
+        cursor: pointer;
+    }
+    .tab:hover {
+        background-color: #d4d4de;
+    }
+    .config-menu {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #7e7ef214;
+        width: 200px;
+        height: 100%;
+    }
+    .left-menu {
+        width: 150px;
+        height: 100%;
+        float: left;
+        background-color: #7e7ef214;
+    }
+    .right-menu {
+        margin-left: 150px;
+    }
+    .top-menu {
+        height: 100px;
+        background-color: #7e7ef214;
+    }
+    #origin {
+        text-align: center;
+        background: white;
+        display: inline-block;
+        height: 80px;
+        width: 130px;
+        margin: 10px;
+    }
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+    }
+    ::-webkit-scrollbar-track {
+        background-color: #bee1eb;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: #00aff0;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #9c3;
+    }
+    ::-webkit-scrollbar-thumb:active {
+        background-color: #00aff0;
+    }
+
+    body {
+        margin: 0;
+    }
+    #up-menu {
+        width: 100%;
+        height: 100px;
+        position: absolute;
+        top: 0;
+        background-color: #7e7ef214;
+    }
+
+    .dropzone {
+        width: 100%;
+        height: 100%;
+    }
+</style>

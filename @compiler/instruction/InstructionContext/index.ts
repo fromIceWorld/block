@@ -98,7 +98,6 @@ function createNative(tNode: elementNode, index: number) {
         );
 
         dom.append(...filters);
-    } else {
     }
     tNode.native = dom;
     LView[offset + index] = dom;
@@ -125,7 +124,7 @@ function elementEnd(tagName: string) {
         }
     }
     // 指令的生命周期
-    tNode.directives.forEach((dir) => {
+    tNode.directives.forEach((dir: ObjectConstructor) => {
         Hook(dir, 'Oninserted', native);
     });
     // 当前节点是组件，就将slot索引存进 [TViewIndex.Slots];
@@ -166,7 +165,7 @@ function updateProperty(index: number) {
         }
     }
     // 指令生命周期
-    directives.forEach((dir) => {
+    directives.forEach((dir: ObjectConstructor) => {
         updateDirective(dir, tNode);
     });
 }
@@ -399,7 +398,7 @@ function resolveDirective(tagName: string, index: number) {
                 TView[TViewIndex.Children].push(index);
                 TNode.component = dir;
                 TNode['TView'] = new TemplateView(
-                    TNode.component,
+                    TNode.component as ObjectConstructor,
                     TNode,
                     native
                 );

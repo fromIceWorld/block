@@ -27,7 +27,7 @@ class TemplateView extends TemplateDynamic {
         Object['setPrototypeOf'](this, TemplateView.prototype);
         this[TViewIndex.Class] = component;
         this[TViewIndex.TNode] = tNode;
-        this[TViewIndex.Host] = host;
+        this[TViewIndex.Host] = host!;
         this[TViewIndex.LView] = new LogicView();
         this[TViewIndex.Module] = component.hasOwnProperty(componentFromModule)
             ? (component as any)[componentFromModule]

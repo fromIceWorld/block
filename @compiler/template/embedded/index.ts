@@ -82,7 +82,7 @@ class ViewContainer extends TemplateDynamic {
         if (this.previousViewDefination!.length == 0) {
             this.childrenView.forEach((embeddedView) => {
                 (this[TViewIndex.Host] as HTMLTemplateElement).after!(
-                    ...Array.from(embeddedView[TViewIndex.Host].childNodes)
+                    ...Array.from(embeddedView[TViewIndex.Host]!.childNodes)
                 );
             });
         }
