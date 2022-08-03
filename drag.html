@@ -1,4 +1,4 @@
-<div>
+<div style="display: flex; height: 100%">
     <div class="left-menu">
         <div
             id="origin"
@@ -35,8 +35,7 @@
             </div>
         </div>
     </div>
-    <div class="right-menu">
-        <!-- <div class="top-menu"></div> -->
+    <div class="content">
         <div class="dropzone"></div>
     </div>
 </div>
@@ -48,6 +47,7 @@
         <span class="tab">styles</span>
     </div>
     <div class="tab-body"></div>
+    <div class="add-style">+</div>
 </div>
 <script>
     var dragged,
@@ -57,7 +57,10 @@
         styles,
         configMenu = document.getElementsByClassName('config-menu')[0],
         closeBtn = document.getElementsByClassName('close')[0],
-        tabBody = document.getElementsByClassName('tab-body')[0];
+        addBtn = document.getElementsByClassName('add-style')[0],
+        tabBody = document.getElementsByClassName('tab-body')[0],
+        styleParam = {};
+
     closeBtn.addEventListener('click', function (event) {
         if (configMenu) {
             configMenu.attributeStyleMap.set('width', '0');
@@ -67,18 +70,44 @@
             configMenu.attributeStyleMap.set('width', '200px');
         }
     });
+    addBtn.addEventListener('click', function (event) {
+        if (focusBlock) {
+            let row = document.createElement('div'),
+                keyNative = document.createElement('div'),
+                colon = document.createElement('span'),
+                valueNative = document.createElement('div');
+            row.setAttribute('class', 'config-row');
+            colon.setAttribute('class', 'config-colon');
+            colon.appendChild(new Text(' :  '));
+            keyNative.setAttribute('class', 'style-key');
+            keyNative.setAttribute('contenteditable', 'true');
+
+            valueNative.setAttribute('class', 'style-value');
+            valueNative.setAttribute('contenteditable', 'true');
+            valueNative.addEventListener('blur', (e) => {
+                focusBlock.style[key] = valueNative.childNodes[0].nodeValue;
+            });
+            keyNative.appendChild(new Text(''));
+            valueNative.appendChild(new Text(''));
+            row.append(keyNative, colon, valueNative);
+            tabBody.append(row);
+        }
+    });
     /* 点击聚焦 */
     document.addEventListener(
         'click',
         function (event) {
-            if (event.target.className !== 'dropzone') {
+            if (
+                event.target.className !== 'dropzone' &&
+                event.target.id !== 'block'
+            ) {
                 return;
             }
             if (focusBlock) {
-                focusBlock.style.border = '0.5px dashed #766fd0';
+                focusBlock.style.background = 'white';
             }
             focusBlock = event.target;
-            focusBlock.style.border = '0.5px dashed red';
+            focusBlock.style.background = 'aliceblue';
             let styleString = focusBlock.getAttribute('style'),
                 styles = styleString.split(';'),
                 styleMap = {};
@@ -99,26 +128,11 @@
                 colon.setAttribute('class', 'config-colon');
                 colon.appendChild(new Text(' :  '));
                 keyNative.setAttribute('class', 'style-key');
+                keyNative.setAttribute('contenteditable', 'true');
                 valueNative.setAttribute('class', 'style-value');
-                valueNative.addEventListener('dblclick', (e) => {
-                    let tar = e.target,
-                        text = tar.childNodes[0],
-                        input = document.createElement('input');
-                    input.value = text.nodeValue;
-                    input.setAttribute('autofocus', 'autofocus');
-                    // input.focus();
-                    input.addEventListener('blur', (e) => {
-                        text.nodeValue = input.value;
-                        input.replaceWith(text);
-                        styleMap[key] = text.nodeValue;
-                        focusBlock.setAttribute(
-                            'style',
-                            Object.entries(styleMap)
-                                .map(([k, v]) => `${k}:${v}`)
-                                .join(';')
-                        );
-                    });
-                    tar.replaceChildren(input);
+                valueNative.setAttribute('contenteditable', 'true');
+                valueNative.addEventListener('blur', (e) => {
+                    focusBlock.style[key] = valueNative.childNodes[0].nodeValue;
                 });
                 keyNative.appendChild(new Text(key));
                 valueNative.appendChild(new Text(value));
@@ -189,6 +203,7 @@
             if (event.target.className == 'dropzone') {
                 event.target.style.background = '';
                 let newNode = dragged.cloneNode(true);
+                event.target.style.border = '1px solid red';
                 event.target.append(...newNode.childNodes);
             }
         },
@@ -196,14 +211,44 @@
     );
 </script>
 <style>
-    .config-colo {
+    .add-style {
+        cursor: pointer;
+    }
+    .content {
+        flex: 1;
+    }
+    .my-input {
+        overflow: hidden;
+        display: inline-block;
+        height: 20px;
+        border: none;
+        min-width: 20px;
+        max-width: 150px;
         margin: 0 2px;
+        background-color: white;
+    }
+    .style-key {
+        min-width: 20px;
+    }
+    .style-key:focus,
+    .style-value:focus {
+        outline: none;
+        background-color: white;
+    }
+
+    .config-colon {
+        margin: 0 4px 0 2px;
+        font-weight: 600;
     }
     .config-row {
         display: flex;
     }
+    #block {
+        border: 1px solid red;
+    }
     #block .dropzone {
-        border: 0.5px dashed #766fd0;
+        border: 1px dashed #766fd0;
+        margin: 4px;
     }
     .style-key {
         color: #e75200;
@@ -211,14 +256,7 @@
     }
     .style-value {
         display: inline-block;
-    }
-    .style-value > input {
-        border: none;
-        /* width: 100%; */
-        margin: 0 2px;
-    }
-    .style-value > input:focus {
-        outline: none;
+        min-width: 20px;
     }
     body {
         overflow: hidden;
@@ -256,11 +294,11 @@
     .left-menu {
         width: 150px;
         height: 100%;
-        float: left;
         background-color: #7e7ef214;
     }
     .right-menu {
         margin-left: 150px;
+        height: 100%;
     }
     .top-menu {
         height: 100px;
@@ -302,9 +340,13 @@
         top: 0;
         background-color: #7e7ef214;
     }
-
+    .content > .dropzone {
+        height: 100%;
+    }
     .dropzone {
-        width: 100%;
+        background-color: white;
+    }
+    .container {
         height: 100%;
     }
 </style>
