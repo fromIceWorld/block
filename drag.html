@@ -58,6 +58,8 @@
         configMenu = document.getElementsByClassName('config-menu')[0],
         closeBtn = document.getElementsByClassName('close')[0],
         addBtn = document.getElementsByClassName('add-style')[0],
+        addKey,
+        addValue,
         tabBody = document.getElementsByClassName('tab-body')[0],
         styleParam = {};
 
@@ -84,13 +86,27 @@
 
             valueNative.setAttribute('class', 'style-value');
             valueNative.setAttribute('contenteditable', 'true');
+            keyNative.addEventListener('blur', (e) => {
+                if (keyNative.childNodes[0].nodeValue.trim() == '') {
+                    tabBody.removeChild(row);
+                    return;
+                }
+                valueNative.focus();
+            });
             valueNative.addEventListener('blur', (e) => {
-                focusBlock.style[key] = valueNative.childNodes[0].nodeValue;
+                if (valueNative.childNodes[0].nodeValue.trim() == '') {
+                    tabBody.removeChild(row);
+                } else {
+                    focusBlock.style[keyNative.childNodes[0].nodeValue.trim()] =
+                        valueNative.childNodes[0].nodeValue.trim();
+                    focusBlock.click();
+                }
             });
             keyNative.appendChild(new Text(''));
             valueNative.appendChild(new Text(''));
             row.append(keyNative, colon, valueNative);
             tabBody.append(row);
+            keyNative.focus();
         }
     });
     /* 点击聚焦 */
