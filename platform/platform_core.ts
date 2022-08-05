@@ -1,7 +1,7 @@
+import { parseTemplate } from 'parse-html-template';
 import { compiler } from '../@compiler/compile/index';
 import { Instruction } from '../@compiler/instruction/index';
 import { TViewFns } from '../@compiler/instruction/InstructionContext/index';
-import { ParseTemplate } from '../@compiler/parse/index';
 import { ViewContainer } from '../@compiler/template/embedded/index';
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { Injector, StaticProvider } from '../Injector/index';
@@ -18,7 +18,7 @@ const CORE_PROVIDES: StaticProvider[] = [
     { provide: ViewContainer, useValue: ViewContainer },
     {
         provide: compiler,
-        deps: [ParseTemplate, Instruction, TViewFns],
+        deps: [parseTemplate, Instruction, TViewFns],
         useClass: compiler,
     },
     {
@@ -27,9 +27,9 @@ const CORE_PROVIDES: StaticProvider[] = [
         useClass: Instruction,
     },
     {
-        provide: ParseTemplate,
+        provide: parseTemplate,
         deps: [],
-        useClass: ParseTemplate,
+        useClass: parseTemplate,
     },
     {
         provide: TViewFns,

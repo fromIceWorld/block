@@ -5,7 +5,7 @@ export default {
     output: {
         file: './dist/main.js',
         format: 'es',
-        name: 'parseTemplate',
+        name: 'block',
     },
     strict: false,
     plugins: [

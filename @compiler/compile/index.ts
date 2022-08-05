@@ -1,5 +1,5 @@
+import { parseTemplate } from 'parse-html-template';
 import { Instruction } from '../instruction/index';
-import { ParseTemplate } from '../parse/index';
 
 /**
  * 解析组件，生成指令集函数
@@ -7,11 +7,11 @@ import { ParseTemplate } from '../parse/index';
  * @param instruction 指令集函数集合
  */
 class compiler {
-    parse: ParseTemplate;
+    parse: parseTemplate;
     instruction: Instruction;
     instructionContext: any;
     constructor(
-        parse: ParseTemplate,
+        parse: parseTemplate,
         instruction: Instruction,
         instructionContext: any
     ) {

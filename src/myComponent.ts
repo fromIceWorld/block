@@ -35,12 +35,12 @@ import { Component } from '../decorators/index';
         <h3 style="background:yellow">下面是路由：</h3>
         <h1>路由跳转:</h1>
         <router-link
-            to="file:///C:/Users/%E5%B4%94%E5%86%B0%E5%86%B0/Desktop/TView/index.html#iron/mark5"
+            to="file:///C:/Users/%E5%B4%94%E5%86%B0%E5%86%B0/Desktop/block/index.html#iron/mark5"
             >GO!钢铁侠实验室</router-link
         >
         <div></div>
         <router-link
-            to="file:///C:/Users/%E5%B4%94%E5%86%B0%E5%86%B0/Desktop/TView/index.html#spider/mark5"
+            to="file:///C:/Users/%E5%B4%94%E5%86%B0%E5%86%B0/Desktop/block/index.html#spider/mark5"
             >GO!蜘蛛侠家</router-link
         >
         <router-view></router-view>
