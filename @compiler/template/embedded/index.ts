@@ -73,7 +73,8 @@ class ViewContainer extends TemplateDynamic {
                     viewsContext[i],
                     this[TViewIndex.Host] as HTMLTemplateElement
                 );
-                embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
+                embedded[TViewIndex.Expansibility] =
+                    this[TViewIndex.Expansibility];
                 this.childrenView.push(embedded);
                 embedded.attach();
                 embedded.detectChanges();

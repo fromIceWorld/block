@@ -364,7 +364,7 @@ function extractStructures(index: number, def: ViewDefination) {
     let { attributes } = TNode,
         has = false,
         structures = attributes[AttributeType.structure];
-    const InRanges = TView[TViewIndex.InRange]();
+    const InRanges = TView[TViewIndex.Expansibility];
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
         if (structures.hasOwnProperty(k) && v == null) {
@@ -389,7 +389,7 @@ function resolveDirective(tagName: string, index: number) {
         native = TView[TViewIndex.LView][index + offset],
         TNode = TView[offset + index] as elementNode;
     let { attributes, directives } = TNode;
-    const InRanges = TView[TViewIndex.InRange]() || [];
+    const InRanges = TView[TViewIndex.Expansibility] || [];
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
         if (v == null) {

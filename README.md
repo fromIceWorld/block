@@ -320,19 +320,22 @@ router
 
 ## 流畅的数据及逻辑流转
 
+# iframe结构
+
 1.Application {
 	parseHTML,     // 编译html 文本，导出抽象的节点
 	instruction?,  // 解析htmlTree,生成指令集函数
 	render,        // 环境中 节点操作的相关API
 
 	injector,      // 依赖注入
-
+	
 	modules,       // 注册module,
 	routes,
 }
 
 ---------------------------------------------------------------
-模块 <=> 路由：
+## 模块 <=> 路由：
+
 模块控制路由?
 路由控制模块?
 
@@ -344,6 +347,8 @@ registerRouter：有路由模式
 registerModule: 无路由模式,如果模块中有router，相当于注册新的路由段，转换成有路由模式。
 
 ----------------------------
+## 路由
+
 路由分段注册：
 
 在模块上
@@ -358,6 +363,8 @@ RouterModule.regiterRoutes()注册路由[作为routes?/imports?/providers?]
 模块：
 
 ------------------------------------
+## 依赖注入
+
 依赖注入的关系：
 application：parseHTML,instruction,render [作为可配置的providers,注入到rootModule]
 module:
@@ -375,6 +382,8 @@ module的providers：
 
 
 -------------------------------------
+## 挂载
+
 自动挂载：
 节点：以节点为基准,解析template挂载? 
 组件: 以组件为基准挂载? ❌ 无独立的组件[组件在模块内部]

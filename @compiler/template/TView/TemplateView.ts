@@ -20,8 +20,10 @@ import { LogicView } from './LogicView';
 class TemplateView extends TemplateDynamic {
     constructor(
         component: ConstructortInterface,
-        tNode?: elementNode,
-        host = θd.createElement('template').content!
+        declarations: any = parent[TViewIndex.Expansibility] || [],
+        host = θd.createElement('template').content!,
+        parent: TemplateView = TViewFns.currentTView(),
+        tNode?: elementNode
     ) {
         super();
         Object['setPrototypeOf'](this, TemplateView.prototype);
@@ -32,7 +34,8 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.Module] = component.hasOwnProperty(componentFromModule)
             ? (component as any)[componentFromModule]
             : null;
-        this[TViewIndex.Parent] = TViewFns.currentTView();
+        this[TViewIndex.Parent] = parent;
+        this[TViewIndex.Expansibility] = declarations;
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
         this.updateInput(this[TViewIndex.Context]);

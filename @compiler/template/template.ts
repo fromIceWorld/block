@@ -6,7 +6,6 @@ import { InputChanges } from '../../decorators/prop/Input';
 import { EventChanges, EventKeys } from '../../decorators/prop/Output';
 import { StaticInjector } from '../../Injector/index';
 import { Hook } from '../../lifeCycle/index';
-import { registerApplication } from '../../platform/application';
 import { TViewIndex } from '../Enums/TView';
 import { elementNode } from './TNode/index';
 import { LogicView } from './TView/LogicView';
@@ -35,12 +34,6 @@ class TemplateDynamic extends Array {
     [TViewIndex.Slots]?: Object;
     [TViewIndex.Injector]?: StaticInjector;
     [TViewIndex.Module]: any;
-    [TViewIndex.InRange] = () => {
-        return this[TViewIndex.Module] &&
-            this[TViewIndex.Module][registerApplication]
-            ? this[TViewIndex.Module][registerApplication].inRange || []
-            : this[TViewIndex.Parent]![TViewIndex.InRange];
-    };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
     [TViewIndex.EmbeddedView]?: ObjectInterface<any>;
     constructor() {
