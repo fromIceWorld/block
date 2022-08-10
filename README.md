@@ -318,5 +318,20 @@ router
         节点绑定的事件上下文已经改变为指令上下文 ❌
 ```
 
+## input输入框
+
+```typescript
+`input` target.value = '';
+`checkbox` target.checked = false/true
+```
+
+## select输入框
+
+```typescript
+`select` target.value = ''  //直接将option选项赋值
+```
+
+
+
 ## 流畅的数据及逻辑流转
 

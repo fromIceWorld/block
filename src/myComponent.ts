@@ -6,8 +6,20 @@ import { Inject } from '../decorators/params/inject';
     styles: ``,
     template: `
         <input &value="exp2" @input="onInput($event)"></input>
-        <input id="cbox1" type="checkbox" value="选中" @change="onchange($event)" label="第一个checkbox">123</input>
-        <label for="cbox1">This is the first checkbox</label>
+        <input id="orange" type="checkbox" &checked="!exp" value="橘子" @change="onchange($event)" label="第一个checkbox"></input>
+        <label for="orange">橘子</label>
+        <input id="apple" type="checkbox" value="苹果" @change="onchange($event)" label="第一个checkbox"></input>
+        <label for="apple">苹果</label>
+        <select @change="selectChange($event)">
+            <option>A</option>
+            <option>B</option>
+            <option>C</option>
+        </select>
+            <input id="radio" type="radio" value="少年" @change="onRadioChange($event)" name="Radio"></input>
+            <label for="radio">少年</label>
+            <input id="radio2" type="radio" value="少年" @change="onRadioChange($event)"  name="Radio"></input>
+            <label for="radio2">青年</label>
+       
         <div
             data-angular
             name="angular"
@@ -69,6 +81,12 @@ class MyComponent {
         this.exp2 = e.target.value;
         console.log('change事件');
         this.cd.detectChanges();
+    }
+    selectChange(e) {
+        console.log(e);
+    }
+    onRadioChange(e) {
+        console.log(e);
     }
     emit(e: EventTarget, value: any) {
         console.log(e, value, this);
