@@ -20,7 +20,8 @@ import { LogicView } from './LogicView';
 class TemplateView extends TemplateDynamic {
     constructor(
         component: ConstructortInterface,
-        declarations: any = parent[TViewIndex.Expansibility] || [],
+        declarations: any = TViewFns.currentTView()[TViewIndex.Expansibility] ||
+            [],
         host = θd.createElement('template').content!,
         parent: TemplateView = TViewFns.currentTView(),
         tNode?: elementNode

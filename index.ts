@@ -1,13 +1,14 @@
-import { TemplateView } from './@compiler/template/TView/TemplateView';
-import { AppModule } from './src/appModule';
-import { Route } from './src/routerModule/Enums/route';
-import { StaticInjector, StaticProvider, Injector } from './Injector/index';
-import { PlatformRef, Application } from './platform/index';
-import { ViewContainer } from './@compiler/template/embedded/index';
-import { compiler } from './@compiler/compile/index';
 import { parseTemplate } from 'parse-html-template';
+import { compiler } from './@compiler/compile/index';
 import { Instruction } from './@compiler/instruction/index';
 import { TViewFns } from './@compiler/instruction/InstructionContext/index';
+import { ViewContainer } from './@compiler/template/embedded/index';
+import { TemplateView } from './@compiler/template/TView/TemplateView';
+import { resolveSelector } from './common/selector';
+import { Injector, StaticInjector, StaticProvider } from './Injector/index';
+import { Application, PlatformRef } from './platform/index';
+import { AppModule } from './src/appModule';
+import { Route } from './src/routerModule/Enums/route';
 // let platform = PlatformBrowserDynamic();
 // platform.bootstrapModule(AppModule);
 // document.body.append(root[0]);
@@ -38,6 +39,9 @@ class Block {
         for (let m of $imports) {
             expansibility.push(...this.polymerizeModule(m));
         }
+        expansibility.forEach(dir=>{
+            dir.chooser = resolveSelector(dir.selector)
+        })
         this.moduleCapacity.set(module, expansibility);
     }
     private polymerizeModule(module): any[] {
@@ -84,6 +88,7 @@ let app = new Block([
         useValue: TViewFns,
     },
     { provide: Injector, deps: [], useClass: Injector },
+    { provide: Application, deps: [], useClass: Application },
 ]);
 app.bootstrapModule(AppModule);
 

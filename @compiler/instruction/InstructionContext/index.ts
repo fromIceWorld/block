@@ -399,8 +399,10 @@ function resolveDirective(tagName: string, index: number) {
                 TNode.component = dir;
                 TNode['TView'] = new TemplateView(
                     TNode.component as ObjectConstructor,
-                    TNode,
-                    native
+                    undefined,
+                    native,
+                    undefined,
+                    TNode
                 );
             }
         } else {

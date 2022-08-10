@@ -61,7 +61,7 @@ class RouterView {
                 this.tView[TViewIndex.Host]!.replaceChildren();
             }
             let component = route.component;
-            this.tView = new TemplateView(component, undefined, this.native);
+            this.tView = new TemplateView(component, , this.native);
             console.log('路由匹配渲染：', this.tView);
             this.tView.attach();
         } else {
@@ -70,3 +70,4 @@ class RouterView {
     }
 }
 export { RouterView, cache };
+
