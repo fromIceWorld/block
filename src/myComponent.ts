@@ -1,8 +1,13 @@
+import { CheckDetectChange } from '../@compiler/instruction/InstructionContext/index';
 import { Component } from '../decorators/index';
+import { Inject } from '../decorators/params/inject';
 @Component({
     selector: `#root`,
     styles: ``,
     template: `
+        <input &value="exp2" @input="onInput($event)"></input>
+        <input id="cbox1" type="checkbox" value="选中" @change="onchange($event)" label="第一个checkbox">123</input>
+        <label for="cbox1">This is the first checkbox</label>
         <div
             data-angular
             name="angular"
@@ -54,7 +59,17 @@ class MyComponent {
     dataWidth = '200px';
     class1 = true;
     class2 = false;
-    constructor() {}
+    constructor(@Inject(CheckDetectChange) private cd: CheckDetectChange) {}
+    onInput(e) {
+        this.exp2 = e.target.value;
+        console.log('onInput事件', this);
+        this.cd.detectChanges();
+    }
+    onchange(e) {
+        this.exp2 = e.target.value;
+        console.log('change事件');
+        this.cd.detectChanges();
+    }
     emit(e: EventTarget, value: any) {
         console.log(e, value, this);
     }

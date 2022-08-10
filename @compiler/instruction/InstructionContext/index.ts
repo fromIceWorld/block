@@ -19,6 +19,8 @@ const offset = 20;
  */
 let instructionIFrameStates: any = {
         currentTView: null,
+        rootTView: null,
+        runningTView: null,
     },
     elementStack: Array<number> = new Array();
 function currentTView() {
@@ -486,9 +488,16 @@ function linkParentChild(parentIndex: number, index: number) {
 }
 function bootstrapView(rootComponent: { new (): any }) {
     let rootTView = ((window as any).root = new TemplateView(rootComponent));
+    instructionIFrameStates.rootTView = rootTView;
     rootTView.attach();
     rootTView.detectChanges();
     return rootTView;
+}
+class CheckDetectChange {
+    detectChanges() {
+        let view = instructionIFrameStates.rootTView;
+        view.detectChanges();
+    }
 }
 const TViewFns: ObjectInterface<Function> = {
     elementStart,
@@ -505,4 +514,10 @@ const TViewFns: ObjectInterface<Function> = {
     embeddedViewStart,
     embeddedViewEnd,
 };
-export { TViewFns, bootstrapView, ViewDefination };
+export {
+    TViewFns,
+    bootstrapView,
+    ViewDefination,
+    CheckDetectChange,
+    instructionIFrameStates,
+};

@@ -16,7 +16,7 @@ import { Component, Input, Output } from '../decorators/index';
             &style="{background:item.color}"
             @click="emitValue()"
         >
-            按钮: {{ arr['1'].desc }}
+            按钮: {{ arr[index].desc }}
         </div>
         <app-demo
             &value="parentValue"

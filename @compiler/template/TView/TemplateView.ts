@@ -5,7 +5,10 @@ import { θd } from '../../../DocumentAPI/browser';
 import { Hook } from '../../../lifeCycle/index';
 import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/index';
-import { TViewFns } from '../../instruction/InstructionContext/index';
+import {
+    instructionIFrameStates,
+    TViewFns,
+} from '../../instruction/InstructionContext/index';
 import { offset, TemplateDynamic, ViewMode } from '../template';
 import { elementNode } from '../TNode/index';
 import { LogicView } from './LogicView';
@@ -25,6 +28,7 @@ class TemplateView extends TemplateDynamic {
     ) {
         super();
         Object['setPrototypeOf'](this, TemplateView.prototype);
+        instructionIFrameStates.runningTView = this;
         this[TViewIndex.Class] = component;
         this[TViewIndex.TNode] = tNode;
         this[TViewIndex.Host] = host!;
@@ -38,6 +42,7 @@ class TemplateView extends TemplateDynamic {
         this.updateInput(this[TViewIndex.Context]);
         this.createOutput(this[TViewIndex.Context]);
         this.mergeContextAndDecorators(this[TViewIndex.Context]);
+        instructionIFrameStates.runningTView = null;
     }
     private $getDefinition: any = (() => {
         return () => {
@@ -109,13 +114,13 @@ class TemplateView extends TemplateDynamic {
     }
     destroyed() {
         TViewFns.pushContext(this);
-        this[TViewIndex.Context].OnDestroy();
         let children = this[TViewIndex.Children];
         for (let child of children) {
             let tNode = this[child + offset];
-            tNode['TView'].detectChanges();
+            tNode['TView'].destroyed();
         }
         Hook(this[TViewIndex.Context], 'OnDestroy');
+        this[TViewIndex.Host]?.replaceChildren();
         TViewFns.popContext();
     }
 }

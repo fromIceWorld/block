@@ -36,7 +36,6 @@ class PlatformRef {
                 this.application.registerRoutes(module);
             }
             this.bootstrapComponent($bootstrap[0], this.application);
-            // app['rootTView']?.detectChanges();
         }
     }
     /**
@@ -47,6 +46,7 @@ class PlatformRef {
     bootstrapComponent(rootComponent: { new (): any }, app: Application) {
         let rootTView = bootstrapView(rootComponent);
         app['rootTView'] = rootTView;
+        window['view'] = rootTView;
     }
 }
 /**

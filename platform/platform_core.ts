@@ -1,7 +1,10 @@
 import { parseTemplate } from 'parse-html-template';
 import { compiler } from '../@compiler/compile/index';
 import { Instruction } from '../@compiler/instruction/index';
-import { TViewFns } from '../@compiler/instruction/InstructionContext/index';
+import {
+    CheckDetectChange,
+    TViewFns,
+} from '../@compiler/instruction/InstructionContext/index';
 import { ViewContainer } from '../@compiler/template/embedded/index';
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { Injector, StaticProvider } from '../Injector/index';
@@ -37,6 +40,7 @@ const CORE_PROVIDES: StaticProvider[] = [
     },
     { provide: Injector, deps: [], useClass: Injector },
     { provide: Application, deps: [], useClass: Application },
+    { provide: CheckDetectChange, deps: [], useClass: CheckDetectChange },
 ];
 const PlatformCore = CORE_PROVIDES;
 export { PlatformCore };
