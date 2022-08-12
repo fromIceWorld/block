@@ -1,18 +1,28 @@
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
-export default {
-    input: 'index.ts',
-    output: {
-        file: './dist/main.js',
-        format: 'es',
-        name: 'block',
+import dts from 'rollup-plugin-dts';
+export default [
+    {
+        input: 'index.ts',
+        output: {
+            file: './dist/index.js',
+            format: 'iife',
+            name: 'block',
+        },
+        strict: false,
+        plugins: [
+            resolve(),
+            typescript({
+                downlevelIteration: true,
+            }),
+        ],
     },
-    strict: false,
-    plugins: [
-        resolve(),
-        typescript({
-            downlevelIteration: true,
-            experimentalDecorators: true,
-        }),
-    ],
-};
+    // {
+    //     input: 'index.ts',
+    //     output: {
+    //         file: 'dist/index.d.ts',
+    //         format: 'es',
+    //     },
+    //     plugins: [dts()],
+    // },
+];

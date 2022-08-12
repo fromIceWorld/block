@@ -1,9 +1,9 @@
-import { TViewIndex } from '../../@compiler/Enums/TView';
-import { TViewFns } from '../../@compiler/instruction/InstructionContext/index';
-import { TemplateView } from '../../@compiler/template/TView/TemplateView';
-import { Component } from '../../decorators/index';
-import { Inject } from '../../decorators/params/inject';
-import { Application, routeConfig } from '../../platform/application';
+import { TViewIndex } from '../@compiler/Enums/TView';
+import { TViewFns } from '../@compiler/instruction/InstructionContext/index';
+import { TemplateView } from '../@compiler/template/TView/TemplateView';
+import { Component } from '../decorators/index';
+import { Inject } from '../decorators/params/inject';
+import { Application, routeConfig } from '../platform/application';
 import { Router } from '../routerModule/router';
 
 let cache = {

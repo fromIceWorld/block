@@ -1,5 +1,6 @@
-import { PlatformBrowserDynamic } from './platform/browser';
-import { AppModule } from './src/appModule';
-let platform = PlatformBrowserDynamic();
-platform.bootstrapModule(AppModule);
-document.body.append(root[0]);
+export * from './@compiler/index';
+export * from './common/index';
+export * from './decorators/index';
+export * from './Injector/index';
+export * from './lifeCycle/index';
+export * from './platform/index';

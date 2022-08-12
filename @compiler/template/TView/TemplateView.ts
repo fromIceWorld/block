@@ -31,7 +31,7 @@ class TemplateView extends TemplateDynamic {
         instructionIFrameStates.runningTView = this;
         this[TViewIndex.Class] = component;
         this[TViewIndex.TNode] = tNode;
-        this[TViewIndex.Host] = host!;
+        this[TViewIndex.Host] = host as any;
         this[TViewIndex.LView] = new LogicView();
         this[TViewIndex.Module] = component.hasOwnProperty(componentFromModule)
             ? (component as any)[componentFromModule]

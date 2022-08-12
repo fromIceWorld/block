@@ -1,4 +1,7 @@
-import { ConstructortInterface } from '../../../common/interface';
+import {
+    ConstructortInterface,
+    ObjectInterface,
+} from '../../../common/interface';
 import { InputChanges } from '../../../decorators/index';
 import { Hook } from '../../../lifeCycle/index';
 import { componentFromModule } from '../../../platform/application';
@@ -29,7 +32,7 @@ class ViewContainer extends TemplateDynamic {
         this[TViewIndex.Class] = dir;
         this[TViewIndex.LView] = new LogicView();
         this[TViewIndex.TNode] = currentTView[index + offset];
-        this[TViewIndex.TNode]['TView'] = this;
+        this[TViewIndex.TNode]!['TView'] = this;
         this[TViewIndex.Module] = dir.hasOwnProperty(componentFromModule)
             ? (dir as any)[componentFromModule]
             : null;
@@ -51,11 +54,11 @@ class ViewContainer extends TemplateDynamic {
     detectChanges() {
         TViewFns.pushContext(this);
         this.updateInput(this[TViewIndex.EmbeddedView]);
-        let views = this[TViewIndex.EmbeddedView].OnInputChanges(
-            this[TViewIndex.EmbeddedView][InputChanges]
+        let views = this[TViewIndex.EmbeddedView]!.OnInputChanges(
+            this[TViewIndex.EmbeddedView]![InputChanges]
         );
         this.diff(
-            views.map((context) =>
+            views.map((context: ObjectInterface<any>) =>
                 Object.setPrototypeOf(context, this[TViewIndex.Context])
             )
         );

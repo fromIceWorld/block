@@ -6,6 +6,7 @@ enum AttributeType {
     dynamicAttrubute,
     reference,
     structure,
+    model,
     style,
     class,
     text,

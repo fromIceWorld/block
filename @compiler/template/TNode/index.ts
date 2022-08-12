@@ -49,6 +49,7 @@ class elementNode extends TNode {
             {},
             references,
             {},
+            {},
         ];
         Object.keys(structures).forEach(
             (key: string) =>

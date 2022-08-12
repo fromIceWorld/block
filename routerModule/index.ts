@@ -1,4 +1,4 @@
-import { Module } from '../../decorators/index';
+import { Module } from '../decorators/index';
 import { RouterLink } from './router-link';
 import { RouterView } from './router-view';
 @Module({

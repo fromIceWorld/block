@@ -2,7 +2,7 @@ import { bootstrapView } from '../@compiler/instruction/InstructionContext/index
 import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { resolveSelector } from '../common/selector';
 import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
-import { Route } from '../src/routerModule/Enums/route';
+import { Route } from '../routerModule/Enums/route';
 
 const componentFromModule = '$$_Bind_Module',
     registerApplication: string = '$$_Register_Application',
@@ -46,7 +46,7 @@ class PlatformRef {
     bootstrapComponent(rootComponent: { new (): any }, app: Application) {
         let rootTView = bootstrapView(rootComponent);
         app['rootTView'] = rootTView;
-        window['view'] = rootTView;
+        (window as any)['view'] = rootTView;
     }
 }
 /**

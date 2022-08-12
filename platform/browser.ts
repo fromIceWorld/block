@@ -4,8 +4,8 @@ import {
     collectRunDependency,
     createPlatform,
     PlatformRef,
-} from './application';
-import { PlatformCore } from './platform_core';
+} from '../platform/application';
+import { PlatformCore } from '../platform/platform_core';
 
 /**
  * 浏览器平台提供依赖：

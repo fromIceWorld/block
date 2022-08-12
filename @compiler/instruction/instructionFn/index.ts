@@ -14,6 +14,7 @@ interface Configuration {
     addEventMark?: string;
     structureMark?: string;
     referenceMark?: string;
+    modelMark?: string;
 }
 /**
  * 接收 tokenTree,将token解析成指令集。
@@ -30,6 +31,7 @@ class Instruction {
         addEventMark: '@',
         structureMark: '*',
         referenceMark: '#',
+        modelMark: '%',
     };
     createFn = ``;
     updateFn = ``;
@@ -84,7 +86,7 @@ class Instruction {
                         embeddedViews:[${
                             embeddedViews.length
                                 ? embeddedViews
-                                      .map((def) => {
+                                      .map((def: any) => {
                                           return `
                                           {
                                             embeddedViews: ${JSON.stringify(
@@ -171,6 +173,7 @@ class Instruction {
             dynamicAttributes,
             references,
             structures,
+            model,
         ] = element.resolvedAttributes;
         // 嵌入式图
         if (Object.keys(structures).length) {
@@ -194,7 +197,7 @@ class Instruction {
             this.createFn += `
                         elementStart('${tagName}', ${this.index});`;
             Object.entries(events).forEach(([eventName, fn]) => {
-                this.addListener(eventName, fn);
+                this.addListener(eventName, fn as string);
             });
             this.index++;
             this.resolveTNodes(children);
@@ -307,9 +310,15 @@ class Instruction {
             dynamicAttributes,
             references,
             structures,
+            model,
         ] = this.attributes[this.index];
-        let { addAttributeMark, addEventMark, structureMark, referenceMark } =
-            this.configuration;
+        let {
+            addAttributeMark,
+            addEventMark,
+            structureMark,
+            referenceMark,
+            modelMark,
+        } = this.configuration;
         for (let i = 0; i < attributes.length; ) {
             let prefix = attributes[i][0];
             if (attributes[i + 1] == '=') {
@@ -334,6 +343,9 @@ class Instruction {
                         break;
                     case addEventMark:
                         events[attributes[i].slice(1)] = attributes[i + 2];
+                        break;
+                    case modelMark:
+                        model[attributes[i].slice(1)] = attributes[i + 2];
                         break;
                     default:
                         mergeAttributes[attributes[i]] = attributes[i + 2];

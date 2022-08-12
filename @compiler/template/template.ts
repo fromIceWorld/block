@@ -57,7 +57,7 @@ class TemplateDynamic extends Array {
      * 处理 input 属性,新旧属性更新
      *
      */
-    updateInput(ctx) {
+    updateInput(ctx: any) {
         // 根节点无
         if (!this[TViewIndex.TNode]) {
             return;

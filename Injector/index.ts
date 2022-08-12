@@ -35,7 +35,7 @@ abstract class Injector {
         providers: StaticProvider[],
         parent: Injector = currentInjector
     ) {
-        let nextInjector = new StaticInjector(providers, parent);
+        let nextInjector = new StaticInjector(providers, '', parent);
         currentInjector = nextInjector;
         return nextInjector;
     }

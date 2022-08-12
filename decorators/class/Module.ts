@@ -1,4 +1,4 @@
-import { Route } from '../../src/routerModule/Enums/route';
+import { Route } from '../../routerModule/Enums/route';
 
 interface ModuleParams {
     declarations?: Array<any>;

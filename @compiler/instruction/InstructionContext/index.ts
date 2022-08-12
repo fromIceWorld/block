@@ -105,11 +105,26 @@ function createNative(tNode: elementNode, index: number) {
     LView[offset + index] = dom;
 }
 function addStaticAttributes(
-    dom: Element,
+    native: Element,
     attributes: ObjectInterface<string> = {}
 ) {
+    const { tagName, type } = native as any;
     Object.keys(attributes).forEach((key) => {
-        dom.setAttribute(key, attributes[key]);
+        const value = attributes[key];
+        if (tagName == 'INPUT') {
+            if (type == 'text' && key == 'value') {
+                (native as any).value = value;
+                return;
+            } else if (
+                (type == 'checkbox' || type == 'radio') &&
+                key == 'checked'
+            ) {
+                (native as any).checked = value;
+                return;
+            }
+        } else if (tagName == 'SELECT') {
+        }
+        native.setAttribute(key, attributes[key]);
     });
 }
 function elementEnd(tagName: string) {
@@ -186,7 +201,20 @@ function updateProp(
         native = LView[index + offset],
         context = TView[TViewIndex.Context];
     Object.keys(attributes).forEach((key) => {
-        let value = attributes[key](context);
+        const { tagName, type } = native,
+            value = attributes[key](context);
+        if (tagName == 'INPUT') {
+            if (type == 'text' && key == 'value') {
+                native.value = value;
+                return;
+            } else if (
+                (type == 'checkbox' || type == 'radio') &&
+                key == 'checked'
+            ) {
+                native.checked = value;
+                return;
+            }
+        }
         native.setAttribute(key, value);
         finAttributes[key] = value;
     });
