@@ -32,7 +32,8 @@ class elementNode extends TNode {
         events: Object = {},
         dynamicAttributes: ObjectInterface<any> = {},
         references: ObjectInterface<string> = {},
-        structures: ObjectInterface<string[]> = {}
+        structures: ObjectInterface<string[]> = {},
+        model: ObjectInterface<string[]> = {}
     ) {
         super();
         this.tagName = tagName;
@@ -50,6 +51,7 @@ class elementNode extends TNode {
             references,
             {},
             {},
+            model,
         ];
         Object.keys(structures).forEach(
             (key: string) =>

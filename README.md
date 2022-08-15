@@ -282,6 +282,42 @@ router
 `属性性指令`:不渲染，因此与context无关
 ```
 
+## 数据 <==> view
+
+```typescript
+数据的流转/view的更新: 
+	数据更改 ->view变化(触发事件) ->数据更改。这样的数据流转需要[守卫⚔]检察。
+                vue[set/get，proxy],Angular[zone]。
+但是低代码在 结构上是：组件拼接, 
+    	  view逻辑上：view更新只有4个来源,
+    组件更新来源： @Input:数据来源于parent，所以只要parent数据更新时发现会影响下级组件,调动下级检查更新
+		        @Output:正常触发
+				event: 更新数据 =>更新当前view =>如果数据是子级组件的@input ? =>更新子级组件	
+				http: 更新数据 =>更新当前view =>如果数据是子级组件的@input ? =>更新子级组件
+
+```
+
+## 双向数据绑定
+
+```typescript
+% = "value": 依靠instruction指令解析成两个：
+    	&value=value 
+		@input = "($event)=>value = $event.target.value;this.cd.detectChanges();" 
+
+%onChange = "value" 绑定event:change
+
+`1.` input
+	  &value/@input
+`2.` text/textarea 
+		&value/@input
+`3.` checkbox/radio
+		&checked/@change 
+`4.` select
+		&value/@change
+```
+
+
+
 # TODO
 
 ## 插值语法✔ 

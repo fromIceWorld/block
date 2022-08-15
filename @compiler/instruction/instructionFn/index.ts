@@ -145,6 +145,63 @@ class Instruction {
             }
         }
     }
+    resolveModel(tagName: string, resolvedAttributes: Array<any>) {
+        let [
+            dynamicStyle,
+            dynamicClasses,
+            mergeAttributes,
+            events,
+            dynamicAttributes,
+            references,
+            structures,
+            model,
+        ] = resolvedAttributes;
+        for (let [name, value] of Object.entries(model)) {
+            let { type } = mergeAttributes,
+                eventName = name;
+            if (tagName == 'input') {
+                this.instructionParams.add('listener');
+                if (type == 'checkbox') {
+                    this.createFn += `
+                    listener('change',function($event){
+                                        if($event.target.checked){
+                                            ctx['${value}'].push($event.target.value)
+                                        }else{
+                                            ctx['${value}'].splice(ctx['${value}'].indexOf($event.target.value),1)
+                                        }
+                                        ctx.cd.detectChanges();
+                                    }, ${this.index});`;
+                } else if (type == 'radio') {
+                    this.createFn += `
+                    listener('change',function($event){
+                                        ctx['${value}'] = $event.target.value;
+                                        ctx.cd.detectChanges();
+                                    }, ${this.index});`;
+                } else {
+                    eventName = name ? name : 'change';
+                    this.createFn += `
+                    listener('${eventName}',function($event){
+                                        ctx['${value}'] = $event.target.value;
+                                        ctx.cd.detectChanges();
+                                    }, ${this.index});`;
+                }
+            } else if (tagName == 'textarea') {
+                this.createFn += `
+                        listener('change',function($event){
+                                            ctx['${value}'] = $event.target.value;
+                                            ctx.cd.detectChanges();
+                                        }, ${this.index});`;
+            } else if (tagName == 'select') {
+                this.createFn += `
+                        listener('change',function($event){
+                                            ctx['${value}'] = $event.target.value;
+                                            ctx.cd.detectChanges();
+                                        }, ${this.index});`;
+            }
+            this.updateFn += `
+                    updateProperty(${this.index});`;
+        }
+    }
     /**
      * 解析element节点，生成对应指令集,
      * 此处解析嵌入视图[包含结构性指令 *for, *if]
@@ -196,9 +253,12 @@ class Instruction {
             this.instructionParams.add('elementStart');
             this.createFn += `
                         elementStart('${tagName}', ${this.index});`;
+            // 绑定事件
             Object.entries(events).forEach(([eventName, fn]) => {
                 this.addListener(eventName, fn as string);
             });
+            // 解析 % 模型
+            this.resolveModel(tagName, element.resolvedAttributes);
             this.index++;
             this.resolveTNodes(children);
             this.closeElement(element);

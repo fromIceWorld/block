@@ -6,7 +6,7 @@ export default [
         input: 'index.ts',
         output: {
             file: './dist/index.js',
-            format: 'iife',
+            format: 'es',
             name: 'block',
         },
         strict: false,

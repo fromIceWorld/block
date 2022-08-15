@@ -122,7 +122,9 @@ function addStaticAttributes(
                 (native as any).checked = value;
                 return;
             }
-        } else if (tagName == 'SELECT') {
+        } else if (tagName == 'SELECT' || tagName == 'TEXTAREA') {
+            (native as any).value = value;
+            return;
         }
         native.setAttribute(key, attributes[key]);
     });
@@ -167,12 +169,17 @@ function updateProperty(index: number) {
         dynamicAttrubute,
         reference,
         structure,
+        ,
+        model,
     ] = attributes;
     if (Object.keys(structure).length > 0) {
         updateInputValue(index, structure, finAttributes);
     } else {
         if (Object.keys(dynamicAttrubute).length > 0) {
-            updateProp(index, dynamicAttrubute, finAttributes);
+            updateProp(index, dynamicAttrubute, finAttributes, model);
+        }
+        if (Object.keys(model).length > 0) {
+            updateModelProp(index, dynamicAttrubute, model, finAttributes);
         }
         if (dynamicStyle.length > 0) {
             updateStyle(index, dynamicStyle, finAttributes);
@@ -194,30 +201,19 @@ function updateProperty(index: number) {
 function updateProp(
     index: number,
     attributes: ObjectInterface<Function>,
-    finAttributes: ObjectInterface<any>
+    finAttributes: ObjectInterface<any>,
+    model: ObjectInterface<string>
 ) {
     let TView = currentTView(),
-        LView = currentLView(),
+        LView = TView[TViewIndex.LView],
         native = LView[index + offset],
         context = TView[TViewIndex.Context];
     Object.keys(attributes).forEach((key) => {
-        const { tagName, type } = native,
-            value = attributes[key](context);
-        if (tagName == 'INPUT') {
-            if (type == 'text' && key == 'value') {
-                native.value = value;
-                return;
-            } else if (
-                (type == 'checkbox' || type == 'radio') &&
-                key == 'checked'
-            ) {
-                native.checked = value;
-                return;
-            }
-        }
+        const value = attributes[key](context);
         native.setAttribute(key, value);
         finAttributes[key] = value;
     });
+    updateModelProp(index, attributes, model, finAttributes);
 }
 function updateInputValue(
     index: number,
@@ -266,6 +262,42 @@ function updateClass(
     result = mergeClass.join(' ');
     native.setAttribute('class', result);
     finAttributes['class'] = result;
+}
+function updateModelProp(
+    index: number,
+    attributes: ObjectInterface<Function>,
+    model: ObjectInterface<string>,
+    finAttributes: ObjectInterface<any>
+) {
+    const TView = currentTView(),
+        LView = TView[TViewIndex.LView],
+        context = TView[TViewIndex.Context];
+    let native = LView[index + offset],
+        { tagName, type } = native;
+    for (let [event, value] of Object.entries(model)) {
+        let currentValue = context[value];
+        if (tagName == 'INPUT') {
+            if (type == 'text') {
+                native.value = currentValue;
+                finAttributes[value] = currentValue;
+            } else if (type == 'checkbox') {
+                if (
+                    Array.isArray(currentValue) &&
+                    currentValue.includes(native.value)
+                ) {
+                    native.checked = true;
+                } else {
+                    native.checked = false;
+                }
+            } else if (type == 'radio') {
+                native.checked = native.value === context[value];
+            }
+        } else if (tagName == 'TEXT' || tagName == 'TEXTAREA') {
+            native.value = currentValue;
+        } else if (tagName == 'SELECT') {
+            native.value = currentValue;
+        }
+    }
 }
 /**
  * 更新节点style
@@ -373,6 +405,7 @@ function resolveNode(tagName: string, index: number) {
             dynamicAttributes,
             references,
             structures,
+            model,
         ] = attributes[index];
     let tNode = new elementNode(
         tagName,
@@ -383,7 +416,8 @@ function resolveNode(tagName: string, index: number) {
         events,
         dynamicAttributes,
         references,
-        structures
+        structures,
+        model
     );
     TView[offset + index] = tNode;
     return tNode;
