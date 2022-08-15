@@ -192,9 +192,13 @@ class Instruction {
                                             ctx.cd.detectChanges();
                                         }, ${this.index});`;
             } else if (tagName == 'select') {
+                let hasMultiple = mergeAttributes['multiple'] !== undefined,
+                    finishValue = hasMultiple
+                        ? 'Array.from($event.target.selectedOptions).map(item=>item.value)'
+                        : '$event.target.value';
                 this.createFn += `
                         listener('change',function($event){
-                                            ctx['${value}'] = $event.target.value;
+                                            ctx['${value}'] = ${finishValue};
                                             ctx.cd.detectChanges();
                                         }, ${this.index});`;
             }

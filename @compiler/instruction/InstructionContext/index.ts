@@ -108,24 +108,7 @@ function addStaticAttributes(
     native: Element,
     attributes: ObjectInterface<string> = {}
 ) {
-    const { tagName, type } = native as any;
     Object.keys(attributes).forEach((key) => {
-        const value = attributes[key];
-        if (tagName == 'INPUT') {
-            if (type == 'text' && key == 'value') {
-                (native as any).value = value;
-                return;
-            } else if (
-                (type == 'checkbox' || type == 'radio') &&
-                key == 'checked'
-            ) {
-                (native as any).checked = value;
-                return;
-            }
-        } else if (tagName == 'SELECT' || tagName == 'TEXTAREA') {
-            (native as any).value = value;
-            return;
-        }
         native.setAttribute(key, attributes[key]);
     });
 }
