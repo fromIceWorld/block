@@ -1,4 +1,5 @@
 import { ConstructortInterface } from '../../../common/interface';
+import { Hook } from '../../../index';
 import { componentFromModule } from '../../../platform/application';
 import { TViewIndex } from '../../Enums/index';
 import { TViewFns } from '../../instruction/InstructionContext/index';
@@ -21,11 +22,15 @@ class TemplateDirective extends TemplateDynamic {
             ? (dir as any)[componentFromModule]
             : null;
         this[TViewIndex.Parent] = TViewFns.currentTView();
-        this[TViewIndex.Class] = dir;
         this.injectProviders();
-        // this[TViewIndex.EmbeddedView] = this.initContext();
+        this[TViewIndex.Context] = this.initContext();
+        this.updateInput(this[TViewIndex.Context]);
+        this.createOutput(this[TViewIndex.Context]);
+        this.mergeContextAndDecorators(this[TViewIndex.Context]);
     }
-    attach() {}
+    attach() {
+        Hook(this[TViewIndex.Context], 'OnInit');
+    }
     detectChanges(): void {}
     destroy() {}
 }

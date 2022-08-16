@@ -354,17 +354,21 @@ router
         节点绑定的事件上下文已经改变为指令上下文 ❌
 ```
 
-## input输入框
+## input,textarea,select✔
 
 ```typescript
-`input` target.value = '';
-`checkbox` target.checked = false/true
+双向数据绑定 % 
 ```
 
-## select输入框
+## selector选择器✔
 
 ```typescript
-`select` target.value = ''  //直接将option选项赋值
+1 tagName              => [tagName,'*']
+2 '#id'                => [id,'*']
+3 [attribute]          => [attribute,null]
+4 [attribute=value]    => [attribute,'value']
+
+`只支持静态属性匹配,不考虑动态属性`
 ```
 
 

@@ -58,8 +58,8 @@ class elementNode extends TNode {
                 (this.attributes[AttributeType.structure][key] = new Function(
                     ...structures[key]
                 ))
-        ),
-            (this.finAttributes = Object.assign({}, attributes));
+        );
+        this.finAttributes = Object.assign({}, attributes);
         Object.keys(dynamicAttributes).map((key) => {
             this.attributes[AttributeType.dynamicAttrubute][key] = new Function(
                 ...dynamicAttributes[key]

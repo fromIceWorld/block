@@ -70,8 +70,7 @@ class TemplateView extends TemplateDynamic {
         for (let index of nodeHasDirectiveIndex) {
             let tNode = this[index + offset];
             for (let dir of tNode.directives) {
-                console.log(dir);
-                // dir.attach();
+                dir.attach();
             }
         }
         for (let child of children) {
@@ -97,8 +96,7 @@ class TemplateView extends TemplateDynamic {
         for (let index of nodeHasDirectiveIndex) {
             let tNode = this[index + offset];
             for (let dir of tNode.directives) {
-                console.log(dir);
-                Hook(dir, 'OnViewUpdateed', this);
+                dir.detectChanges();
             }
         }
         for (let child of children) {

@@ -14,20 +14,18 @@ function resolveSelector(selector: string) {
         pre = selector[0];
     if (pre == '#') {
         kv = ['id', selector.substring(1)];
-    } else if (pre == '.') {
-        kv = ['class', selector.substring(1)];
     } else if (pre == '[') {
         let [key, value] = selector
             .substring(1, selector.length - 1)
             .split('=');
         // 处理 value "[name=angular]" 和 "[name = 'angular']" 一样
         if (value) {
-            kv = [key.trim(), value.replace(/['"]/g, '').trim()];
+            kv = [key.trim(), value.trim()];
         } else {
-            kv = [key.trim(), ''];
+            kv = [key.trim(), null];
         }
     } else {
-        kv = [selector, null];
+        kv = ['tagName', selector];
     }
     return kv;
 }

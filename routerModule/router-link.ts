@@ -1,4 +1,4 @@
-import { Component, Input } from '../../decorators/index';
+import { Component, Input } from '../decorators/index';
 
 @Component({
     selector: 'router-link',
