@@ -5,7 +5,6 @@ import { InjectToken } from '../../decorators/params/inject';
 import { InputChanges } from '../../decorators/prop/Input';
 import { EventChanges, EventKeys } from '../../decorators/prop/Output';
 import { StaticInjector } from '../../Injector/index';
-import { Hook } from '../../lifeCycle/index';
 import { registerApplication } from '../../platform/application';
 import { TViewIndex } from '../Enums/TView';
 import { elementNode } from './TNode/index';
@@ -15,6 +14,8 @@ import { TemplateView } from './TView/TemplateView';
 enum ViewMode {
     create = 1,
     update,
+    install,
+    sleep,
 }
 const offset = 20;
 
@@ -43,6 +44,7 @@ class TemplateDynamic extends Array {
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
     [TViewIndex.EmbeddedView]?: ObjectInterface<any>;
+    [TViewIndex.Mode] = ViewMode.sleep;
     constructor() {
         super();
         Object.setPrototypeOf(this, TemplateDynamic.prototype);
@@ -57,31 +59,33 @@ class TemplateDynamic extends Array {
      * 处理 input 属性,新旧属性更新
      *
      */
-    updateInput(ctx: any) {
+    updateInput(ctx: any): Map<string, { value: any; currentValue: any }> {
         // 根节点无
         if (!this[TViewIndex.TNode]) {
-            return;
+            return new Map([['any', { currentValue: 'any', value: 'any' }]]);
         }
         let tNode = this[TViewIndex.TNode],
             { finAttributes } = tNode as elementNode,
             inputKeys = ctx![InputKeys] || [],
-            inputChanges = ctx[InputChanges];
+            inputChanges = ctx[InputChanges],
+            conflict = new Map();
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>
         )) {
             let value = finAttributes[inputKey],
-                firstChange = !inputChanges[localKey],
-                currentValue = firstChange
-                    ? undefined
-                    : inputChanges[localKey]['currentValue'];
+                currentValue = inputChanges[localKey]
+                    ? inputChanges[localKey]['currentValue']
+                    : undefined;
             inputChanges[localKey] = {
                 inputKey,
                 currentValue: value,
                 previousValue: currentValue,
-                firstChange,
             };
+            if (value !== currentValue) {
+                conflict.set(inputKey, { currentValue, value });
+            }
         }
-        Hook(ctx, 'OnInputChanges', inputChanges);
+        return conflict;
     }
     // 处理output事件,将 EventEmitter,添加到 mid层，方便emit
     createOutput(ctx) {
@@ -90,8 +94,8 @@ class TemplateDynamic extends Array {
             return;
         }
         let host = this[TViewIndex.Host],
-            outputKeys: ObjectInterface<string> = ctx[EventKeys] || [],
-            outputEventObj = Object.create({});
+            outputKeys: ObjectInterface<string> = ctx[EventKeys] || {},
+            outputEventObj = (ctx[EventChanges] = Object.create({}));
         for (let [key, type] of Object.entries(outputKeys)) {
             outputEventObj[key] = {
                 currentValue: new EventEmitter(type, {
@@ -102,6 +106,7 @@ class TemplateDynamic extends Array {
             };
         }
     }
+    // TODO:不能遍历，使用者可能自定义Symbol数据
     // 将context 与@Input，@Output，@Inject合并
     mergeContextAndDecorators(ctx: any) {
         for (let cache of Object.getOwnPropertySymbols(ctx)) {

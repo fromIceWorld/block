@@ -28,14 +28,14 @@ class PlatformRef {
      *平台引导 module
      * @param module 根模块
      */
-    bootstrapModule(module: any) {
+    bootstrapModule(module: any, native) {
         let { $bootstrap, $routes } = module;
         if ($bootstrap.length > 0) {
             this.application.registerModule(module);
             if ($routes) {
                 this.application.registerRoutes(module);
             }
-            this.bootstrapComponent($bootstrap[0], this.application);
+            this.bootstrapComponent($bootstrap[0], this.application, native);
         }
     }
     /**
@@ -43,8 +43,12 @@ class PlatformRef {
      *
      * @param rootComponent 启动的根组件
      */
-    bootstrapComponent(rootComponent: { new (): any }, app: Application) {
-        let rootTView = bootstrapView(rootComponent);
+    bootstrapComponent(
+        rootComponent: { new (): any },
+        app: Application,
+        native: Element
+    ) {
+        let rootTView = bootstrapView(rootComponent, native);
         app['rootTView'] = rootTView;
         (window as any)['view'] = rootTView;
     }

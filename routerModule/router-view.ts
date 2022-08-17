@@ -63,7 +63,7 @@ class RouterView {
             let component = route.component;
             this.tView = new TemplateView(component, undefined, this.native);
             console.log('路由匹配渲染：', this.tView);
-            this.tView.attach();
+            this.tView.install();
         } else {
             console.log('未匹配到路由', parentTree);
         }

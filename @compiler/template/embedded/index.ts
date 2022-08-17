@@ -39,19 +39,14 @@ class ViewContainer extends TemplateDynamic {
         this.injectProviders();
         this[TViewIndex.Context] = this.currentTView[TViewIndex.Context];
         this[TViewIndex.EmbeddedView] = this.initContext();
+    }
+    install() {
         this.updateInput(this[TViewIndex.EmbeddedView]);
         this.createOutput(this[TViewIndex.EmbeddedView]);
         this.mergeContextAndDecorators(this[TViewIndex.EmbeddedView]);
+        this.update();
     }
-    attach() {
-        this.updateInput(this[TViewIndex.EmbeddedView]);
-        // Hook(
-        //     this[TViewIndex.EmbeddedView]!,
-        //     'OnInputChanges',
-        //     this[TViewIndex.EmbeddedView]
-        // );
-    }
-    detectChanges() {
+    update() {
         TViewFns.pushContext(this);
         this.updateInput(this[TViewIndex.EmbeddedView]);
         let views = this[TViewIndex.EmbeddedView]!.OnInputChanges(
@@ -78,9 +73,10 @@ class ViewContainer extends TemplateDynamic {
                 );
                 embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
                 this.childrenView.push(embedded);
-                embedded.attach();
-                embedded.detectChanges();
+                embedded.install();
+                // embedded.detectChanges();
             } else {
+                this.childrenView![i].update();
             }
         }
         if (this.previousContext!.length == 0) {
@@ -116,14 +112,13 @@ class embeddedView extends TemplateDynamic {
     $getDefinition() {
         return this.def;
     }
-    attach() {
+    install() {
+        const children = this[TViewIndex.Children];
         TViewFns.pushContext(this);
-        this.def.template(ViewMode.create, this[TViewIndex.Context]);
-        const directives = this[TViewIndex.Directives],
-            children = this[TViewIndex.Children];
+        this.def.template(ViewMode.install, this[TViewIndex.Context]);
         for (let child of children) {
             let tNode = this[child + offset];
-            tNode['TView'].attach();
+            tNode['TView'].install();
         }
         let rootElements = this[TViewIndex.RootElements].map(
             (index) => this[TViewIndex.LView]![index + offset]
@@ -131,15 +126,14 @@ class embeddedView extends TemplateDynamic {
         this[TViewIndex.Host]!.append(...rootElements);
         TViewFns.popContext();
     }
-    detectChanges() {
-        TViewFns.pushContext(this);
+    update() {
         this.updateInput(this[TViewIndex.Context]);
+        TViewFns.pushContext(this);
         this.def.template(ViewMode.update, this[TViewIndex.Context]);
-        const directives = this[TViewIndex.Directives],
-            children = this[TViewIndex.Children];
+        const children = this[TViewIndex.Children];
         for (let child of children) {
             let tNode = this[child + offset];
-            tNode['TView'].detectChanges();
+            tNode['TView'].update();
         }
         TViewFns.popContext();
     }

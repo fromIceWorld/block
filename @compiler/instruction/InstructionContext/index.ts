@@ -1,8 +1,9 @@
 import { ObjectInterface } from '../../../common/interface';
-import { Decorator, InputChanges, InputKeys } from '../../../decorators/index';
+import { Decorator } from '../../../decorators/index';
 import { θd } from '../../../DocumentAPI/index';
 import { Hook } from '../../../lifeCycle/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
+import { ViewMode } from '../../index';
 import { ViewContainer } from '../../template/embedded/index';
 import { TemplateDirective } from '../../template/TDirective/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
@@ -33,12 +34,15 @@ function currentLView() {
     return currentTView()[TViewIndex.LView];
 }
 function pushContext(tView: TemplateView) {
+    tView[TViewIndex.Mode] = ViewMode.install;
     tView[TViewIndex.Parent] = currentTView();
     setCurrentTView(tView);
 }
 function popContext() {
     let tView = currentTView(),
         preTView = tView[TViewIndex.Parent]!;
+    tView[TViewIndex.Mode] = ViewMode.sleep;
+
     setCurrentTView(preTView);
 }
 function embeddedViewStart(
@@ -170,11 +174,18 @@ function updateProperty(index: number) {
         if (dynamicClass.length > 0) {
             updateClass(index, dynamicClass, finAttributes);
         }
+        // 指令生命周期
+        directives.forEach((dir: TemplateDirective) => {
+            switch (TView[TViewIndex.Mode]) {
+                case ViewMode.install:
+                    Hook(dir[TViewIndex.Context], 'Oninit');
+                    break;
+                case ViewMode.update:
+                    Hook(dir[TViewIndex.Context], 'OnInputChanges');
+                    break;
+            }
+        });
     }
-    // 指令生命周期
-    directives.forEach((dir: ObjectConstructor) => {
-        updateDirective(dir, tNode);
-    });
 }
 /**
  * 更新动态属性
@@ -476,32 +487,13 @@ function resolveDirective(tagName: string, index: number) {
                     native,
                     TNode
                 );
+                Hook(dirInstance[TViewIndex.Context], 'OnBind', native);
                 directives.push(dirInstance);
             }
         }
     }
 }
-function updateDirective(context: ObjectInterface<any>, tNode: elementNode) {
-    let { finAttributes } = tNode,
-        inputKeys = (context as ObjectInterface<any>)[InputKeys] || [],
-        inputChanges = (context as ObjectInterface<any>)[InputChanges];
-    for (let [localKey, inputKey] of Object.entries(
-        inputKeys as ObjectInterface<string>
-    )) {
-        let value = finAttributes[inputKey],
-            firstChange = !inputChanges[localKey],
-            currentValue = firstChange
-                ? undefined
-                : inputChanges[localKey]['currentValue'];
-        inputChanges[localKey] = {
-            inputKey,
-            currentValue: value,
-            previousValue: currentValue,
-            firstChange,
-        };
-    }
-    Hook(context, 'OnInputChanges', inputChanges);
-}
+
 /**
  * 处理节点之间的关系
  *
@@ -548,17 +540,20 @@ function linkParentChild(parentIndex: number, index: number) {
         parentNative.append(LView[index + offset]);
     }
 }
-function bootstrapView(rootComponent: { new (): any }) {
-    let rootTView = ((window as any).root = new TemplateView(rootComponent));
+function bootstrapView(rootComponent: { new (): any }, native: Element) {
+    let rootTView = ((window as any).root = new TemplateView(
+        rootComponent,
+        undefined,
+        native as any
+    ));
     instructionIFrameStates.rootTView = rootTView;
-    rootTView.attach();
-    rootTView.detectChanges();
+    rootTView.install();
     return rootTView;
 }
 class CheckDetectChange {
     detectChanges() {
         let view = instructionIFrameStates.rootTView;
-        view.detectChanges();
+        view.update();
     }
 }
 const TViewFns: ObjectInterface<Function> = {

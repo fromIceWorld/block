@@ -182,10 +182,12 @@ OnDestroy: view被销毁时
 
 ```typescript
 `普通指令`:操作所附着的节点
-	OnInit:指令初始化[native被创建],输入到指令的值是静态的的值(native,tNode)
-	OnInserted:当前指令附加的节点及子节点创建后[已经有native及children节点](native)
-	OnInputChanges: 当前节点数据更新(@Input数据)
-    OnViewUpdateed:当前指令所在的view更新后(view)
+	OnBind:当在节点上解析到指令时
+	OnInit:指令初始化生命周期
+		OnInputChanges: 当前节点数据更新(@Input数据)
+
+	OnViewInit:当前指令所在的view初始化
+    	OnViewUpdated:当前指令所在的view更新后(view)
     OnDestroy：指令销毁[节点上的指令属性消失，节点销毁]
     
 `结构性指令`:只控制结构
@@ -196,12 +198,10 @@ OnDestroy: view被销毁时
 ### 组件
 
 ```typescript
-`OnInputChanges`: @Input属性更改
 `OnInit`          当前view初始化
-`OnSlotInit`      slot节点初始化
 `OnViewInit`      子view初始化后
-`OnSlotChecked`   slot节点检查更新后
-`OnViewChecked`   子view检查更新后【detectChange】
+`OnInputChanges`  @Input更改时
+`OnViewUpdated`   子view检查更新后【OnInputChanges】
 `OnDestroy`       view销毁
 ```
 
@@ -210,10 +210,17 @@ OnDestroy: view被销毁时
 将组件/指令 与template上的节点结合。
 
 ```typescript
-`1.` 支持基础选择器 ✔
-	   只解析基础的css selecor，放弃后代选择器及更复杂的选择器
-`2.` 支持queryselector❌
+`1.` 支持queryselector❌
 		当页面中元素过多时，需要查询较复杂
+`2.` 支持基础选择器 ✔
+	   只解析基础的css selecor，放弃后代选择器及更复杂的选择器
+
+1 tagName              => [tagName,'*']
+2 '#id'                => [id,'*']
+3 [attribute]          => [attribute,null]
+4 [attribute=value]    => [attribute,'value']
+
+`只支持静态属性匹配,不考虑动态属性`        
 ```
 
 ## 组件/指令上下文
@@ -240,6 +247,8 @@ OnDestroy: view被销毁时
    ```
 
 2. template.content内只能加入node，node的事件无法留存
+
+3. input节点在渲染到页面上才能启用focus函数聚焦，不然无效
 
 ## 路由体系
 
@@ -359,19 +368,6 @@ router
 ```typescript
 双向数据绑定 % 
 ```
-
-## selector选择器✔
-
-```typescript
-1 tagName              => [tagName,'*']
-2 '#id'                => [id,'*']
-3 [attribute]          => [attribute,null]
-4 [attribute=value]    => [attribute,'value']
-
-`只支持静态属性匹配,不考虑动态属性`
-```
-
-
 
 ## 流畅的数据及逻辑流转
 

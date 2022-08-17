@@ -28,7 +28,6 @@ class TemplateView extends TemplateDynamic {
     ) {
         super();
         Object['setPrototypeOf'](this, TemplateView.prototype);
-        instructionIFrameStates.runningTView = this;
         this[TViewIndex.Class] = component;
         this[TViewIndex.TNode] = tNode;
         this[TViewIndex.Host] = host as any;
@@ -39,9 +38,6 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.Parent] = TViewFns.currentTView();
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
-        this.updateInput(this[TViewIndex.Context]);
-        this.createOutput(this[TViewIndex.Context]);
-        this.mergeContextAndDecorators(this[TViewIndex.Context]);
         instructionIFrameStates.runningTView = null;
     }
     private $getDefinition: any = (() => {
@@ -56,55 +52,60 @@ class TemplateView extends TemplateDynamic {
             return this[TViewIndex.ComponentDef];
         };
     })();
-    attach(): void {
-        TViewFns.pushContext(this);
+    install() {
+        this[TViewIndex.Mode] = ViewMode.install;
         this.updateInput(this[TViewIndex.Context]);
+        this.createOutput(this[TViewIndex.Context]);
+        this.mergeContextAndDecorators(this[TViewIndex.Context]);
+        TViewFns.pushContext(this);
         Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
-        console.log('组件的数据集合：', def);
-        def.template(ViewMode.create, this[TViewIndex.Context]);
-        Hook(this[TViewIndex.Context], 'OnSlotInit');
-        // 指令
-        const nodeHasDirectiveIndex = this[TViewIndex.Directives];
-        for (let index of nodeHasDirectiveIndex) {
-            let tNode = this[index + offset];
-            for (let dir of tNode.directives) {
-                dir.attach();
-            }
-        }
+        console.log(def);
+        def.template(ViewMode.install, this[TViewIndex.Context]);
         for (let child of children) {
             let tNode = this[child + offset];
-            tNode['TView'].attach();
+            tNode['TView'].install();
         }
         Hook(this[TViewIndex.Context], 'OnViewInit');
-        let rootElements = this[TViewIndex.RootElements].map(
-            (index) => this[TViewIndex.LView]![index + offset]
-        );
-        this[TViewIndex.Host]!.append(...rootElements);
-        TViewFns.popContext();
-    }
-    detectChanges(): void {
-        TViewFns.pushContext(this);
-        this.updateInput(this[TViewIndex.Context]);
-        let def = this.$getDefinition(),
-            children = this[TViewIndex.Children];
-        def && def.template(ViewMode.update, this[TViewIndex.Context]);
-        Hook(this[TViewIndex.Context], 'OnSlotChecked');
-        // 指令
+        // 指令生命周期
         const nodeHasDirectiveIndex = this[TViewIndex.Directives];
         for (let index of nodeHasDirectiveIndex) {
             let tNode = this[index + offset];
             for (let dir of tNode.directives) {
-                dir.detectChanges();
+                Hook(dir[TViewIndex.Context], 'OnViewInit');
             }
         }
-        for (let child of children) {
-            let tNode = this[child + offset];
-            tNode['TView'].detectChanges();
-        }
-        Hook(this[TViewIndex.Context], 'OnViewChecked');
         TViewFns.popContext();
+        this[TViewIndex.Mode] = ViewMode.sleep;
+    }
+    // TODO:slot更新未处理
+    update() {
+        this[TViewIndex.Mode] = ViewMode.install;
+        const conflict = this.updateInput(this[TViewIndex.Context]);
+        Hook(this[TViewIndex.Context], 'OnInputChanges', conflict);
+        if (conflict.size) {
+            TViewFns.pushContext(this);
+            let def = this.$getDefinition(),
+                children = this[TViewIndex.Children];
+            def && def.template(ViewMode.update, this[TViewIndex.Context]);
+            Hook(this[TViewIndex.Context], 'OnUpdated', conflict);
+            for (let child of children) {
+                let tNode = this[child + offset];
+                tNode['TView'].update();
+            }
+            Hook(this[TViewIndex.Context], 'OnViewUpdated', conflict);
+            // 指令生命周期
+            const nodeHasDirectiveIndex = this[TViewIndex.Directives];
+            for (let index of nodeHasDirectiveIndex) {
+                let tNode = this[index + offset];
+                for (let dir of tNode.directives) {
+                    Hook(dir[TViewIndex.Context], 'OnViewUpdated');
+                }
+            }
+            TViewFns.popContext();
+        }
+        this[TViewIndex.Mode] = ViewMode.sleep;
     }
     // Tview 不应该被展示，也不想被销毁时，可以进行休眠。
     sleep() {
