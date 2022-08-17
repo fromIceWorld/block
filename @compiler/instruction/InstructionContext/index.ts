@@ -131,7 +131,7 @@ function elementEnd(tagName: string) {
     }
     // 指令的生命周期
     tNode.directives.forEach((dir: ObjectConstructor) => {
-        Hook(dir, 'Oninserted', native);
+        Hook(dir[TViewIndex.Context], 'OnInserted', native);
     });
     // 当前节点是组件，就将slot索引存进 [TViewIndex.Slots];
     if (tNode.TView) {
