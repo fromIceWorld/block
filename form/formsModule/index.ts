@@ -3,7 +3,7 @@ import { formGroupDirective } from '../form-group-directive';
 
 @Module({
     declarations: [formGroupDirective],
-    exports: [formGroupDirective],
+    exports: [],
 })
 class formsModule {}
 export { formsModule };
