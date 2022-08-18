@@ -23,6 +23,9 @@ class TemplateDirective extends TemplateDynamic {
         this[TViewIndex.Parent] = TViewFns.currentTView();
         this.injectProviders();
         this[TViewIndex.Context] = this.initContext();
+        // this.updateInput(this[TViewIndex.Context]);
+        // this.createOutput(this[TViewIndex.Context]);
+        // this.mergeContextAndDecorators(this[TViewIndex.Context]);
     }
     install() {
         this.updateInput(this[TViewIndex.Context]);

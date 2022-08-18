@@ -1,6 +1,6 @@
-import { bootstrapView } from '../@compiler/instruction/InstructionContext/index';
-import { TemplateView } from '../@compiler/template/TView/TemplateView';
 import { resolveSelector } from '../common/selector';
+import { bootstrapView } from '../compiler/instruction/InstructionContext/index';
+import { TemplateView } from '../compiler/template/TView/TemplateView';
 import { Injector, StaticInjector, StaticProvider } from '../Injector/index';
 import { Route } from '../routerModule/Enums/route';
 

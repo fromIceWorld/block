@@ -1,12 +1,12 @@
 import { parseTemplate } from 'parse-html-template';
-import { compiler } from '../@compiler/compile/index';
-import { Instruction } from '../@compiler/instruction/index';
+import { compiler } from '../compiler/compile/index';
+import { Instruction } from '../compiler/instruction/index';
 import {
     CheckDetectChange,
     TViewFns,
-} from '../@compiler/instruction/InstructionContext/index';
-import { ViewContainer } from '../@compiler/template/embedded/index';
-import { TemplateView } from '../@compiler/template/TView/TemplateView';
+} from '../compiler/instruction/InstructionContext/index';
+import { ViewContainer } from '../compiler/template/embedded/index';
+import { TemplateView } from '../compiler/template/TView/TemplateView';
 import { Injector, StaticProvider } from '../Injector/index';
 import { Application, PlatformRef } from './application';
 

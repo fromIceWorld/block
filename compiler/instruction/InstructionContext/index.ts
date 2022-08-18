@@ -34,15 +34,12 @@ function currentLView() {
     return currentTView()[TViewIndex.LView];
 }
 function pushContext(tView: TemplateView) {
-    tView[TViewIndex.Mode] = ViewMode.install;
     tView[TViewIndex.Parent] = currentTView();
     setCurrentTView(tView);
 }
 function popContext() {
     let tView = currentTView(),
         preTView = tView[TViewIndex.Parent]!;
-    tView[TViewIndex.Mode] = ViewMode.sleep;
-
     setCurrentTView(preTView);
 }
 function embeddedViewStart(
@@ -182,7 +179,7 @@ function updateProperty(index: number) {
                     Hook(dir[TViewIndex.Context], 'OnInit');
                     break;
                 case ViewMode.update:
-                    dir.install();
+                    dir.update();
                     Hook(dir[TViewIndex.Context], 'OnInputChanges');
                     break;
             }

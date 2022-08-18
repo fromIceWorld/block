@@ -7,7 +7,6 @@ export default [
         output: {
             file: './@block/index.js',
             format: 'es',
-            name: 'block',
         },
         strict: false,
         plugins: [
@@ -17,12 +16,46 @@ export default [
             }),
         ],
     },
-    // {
-    //     input: 'index.ts',
-    //     output: {
-    //         file: 'dist/index.d.ts',
-    //         format: 'es',
-    //     },
-    //     plugins: [dts()],
-    // },
+    {
+        input: 'form/index.ts',
+        output: {
+            file: './@block/form/index.js',
+            format: 'es',
+        },
+        strict: false,
+        plugins: [
+            resolve(),
+            typescript({
+                downlevelIteration: true,
+            }),
+        ],
+    },
+    {
+        input: 'platform/index.ts',
+        output: {
+            file: './@block/platform/index.js',
+            format: 'es',
+        },
+        strict: false,
+        plugins: [
+            resolve(),
+            typescript({
+                downlevelIteration: true,
+            }),
+        ],
+    },
+    {
+        input: 'compiler/index.ts',
+        output: {
+            file: './@block/platform/index.js',
+            format: 'es',
+        },
+        strict: false,
+        plugins: [
+            resolve(),
+            typescript({
+                downlevelIteration: true,
+            }),
+        ],
+    },
 ];

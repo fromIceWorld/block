@@ -81,7 +81,7 @@ class TemplateView extends TemplateDynamic {
     }
     // TODO:slot更新未处理
     update() {
-        this[TViewIndex.Mode] = ViewMode.install;
+        this[TViewIndex.Mode] = ViewMode.update;
         const conflict = this.updateInput(this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnInputChanges', conflict);
         if (conflict.size) {
