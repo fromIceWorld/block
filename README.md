@@ -10,9 +10,10 @@
 - [x] 依赖注入  `@inject`
 - [x] 更多的结构性指令[for, if,...]
 - [x] slot
+- [x] 内置form指令
 - [ ] 路由
 - [ ] 服务端渲染
-- [ ] web components支持
+- [ ] web components支持[输出]
 - [ ] ...
 
 ## view
@@ -183,6 +184,7 @@ OnDestroy: view被销毁时
 ```typescript
 `普通指令`:操作所附着的节点
 	OnBind:当在节点上解析到指令时
+    OnInserted:host插入到页面
 	OnInit:指令初始化生命周期
 		OnInputChanges: 当前节点数据更新(@Input数据)
 
@@ -249,6 +251,14 @@ OnDestroy: view被销毁时
 2. template.content内只能加入node，node的事件无法留存
 
 3. input节点在渲染到页面上才能启用focus函数聚焦，不然无效
+
+   ```typescript
+   
+   ```
+
+   
+
+4. 12
 
 ## 路由体系
 

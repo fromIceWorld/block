@@ -29,7 +29,9 @@ class TemplateDirective extends TemplateDynamic {
         this.createOutput(this[TViewIndex.Context]);
         this.mergeContextAndDecorators(this[TViewIndex.Context]);
     }
-    update(): void {}
+    update(): void {
+        const conflict = this.updateInput(this[TViewIndex.Context]);
+    }
     destroy() {}
 }
 export { TemplateDirective };

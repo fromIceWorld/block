@@ -2,8 +2,8 @@
     "name": "my-world",
     "version": "0.0.1",
     "description": "view与template的关系库,为了低代码创建。🧩",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./@block",
+    "types": "./@block/index.d.ts",
     "scripts": {
         "test": "jest",
         "build": "rollup --config",

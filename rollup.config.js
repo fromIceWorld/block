@@ -5,7 +5,7 @@ export default [
     {
         input: 'index.ts',
         output: {
-            file: './dist/index.js',
+            file: './@block/index.js',
             format: 'es',
             name: 'block',
         },

@@ -178,9 +178,11 @@ function updateProperty(index: number) {
         directives.forEach((dir: TemplateDirective) => {
             switch (TView[TViewIndex.Mode]) {
                 case ViewMode.install:
-                    Hook(dir[TViewIndex.Context], 'Oninit');
+                    dir.install();
+                    Hook(dir[TViewIndex.Context], 'OnInit');
                     break;
                 case ViewMode.update:
+                    dir.install();
                     Hook(dir[TViewIndex.Context], 'OnInputChanges');
                     break;
             }
