@@ -2,8 +2,13 @@ import { EventEmitter } from '../../common/event/EventEmitter';
 import { ConstructortInterface, ObjectInterface } from '../../common/interface';
 import { InputKeys } from '../../decorators/index';
 import { InjectToken } from '../../decorators/params/inject';
+import {
+    EventChanges,
+    EventKeys,
+    ViewChanges,
+    ViewKeys,
+} from '../../decorators/prop/index';
 import { InputChanges } from '../../decorators/prop/Input';
-import { EventChanges, EventKeys } from '../../decorators/prop/Output';
 import { StaticInjector } from '../../Injector/index';
 import { registerApplication } from '../../platform/application';
 import { TViewIndex } from '../Enums/TView';
@@ -40,7 +45,7 @@ class TemplateDynamic extends Array {
         return this[TViewIndex.Module] &&
             this[TViewIndex.Module][registerApplication]
             ? this[TViewIndex.Module][registerApplication].inRange || []
-            : this[TViewIndex.Parent]![TViewIndex.InRange];
+            : this[TViewIndex.Parent]![TViewIndex.InRange]();
     };
     [TViewIndex.References]: ObjectInterface<number[]> = {};
     [TViewIndex.EmbeddedView]?: ObjectInterface<any>;
@@ -72,7 +77,7 @@ class TemplateDynamic extends Array {
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>
         )) {
-            let value = finAttributes[inputKey],
+            let value = finAttributes[inputKey] || ctx[inputKey],
                 currentValue = inputChanges[localKey]
                     ? inputChanges[localKey]['currentValue']
                     : undefined;
@@ -88,7 +93,7 @@ class TemplateDynamic extends Array {
         return conflict;
     }
     // 处理output事件,将 EventEmitter,添加到 mid层，方便emit
-    createOutput(ctx) {
+    createOutput(ctx: ObjectInterface<any>) {
         // 根节点无
         if (!this[TViewIndex.TNode]) {
             return;
@@ -106,9 +111,18 @@ class TemplateDynamic extends Array {
             };
         }
     }
+    createViewChild(ctx: ObjectInterface<any>) {
+        let viewKeys: ObjectInterface<string> = ctx[ViewKeys] || {},
+            viewObj = (ctx[ViewChanges] = Object.create({}));
+        for (let [local, tag] of Object.entries(viewKeys)) {
+            viewObj[local] = {
+                key: tag,
+            };
+        }
+    }
     // TODO:不能遍历，使用者可能自定义Symbol数据
     // 将context 与@Input，@Output，@Inject合并
-    mergeContextAndDecorators(ctx: any) {
+    mergeContextAndDecorators(ctx: ObjectInterface<any>) {
         for (let cache of Object.getOwnPropertySymbols(ctx)) {
             for (let [key, value] of Object.entries(
                 ctx[cache] as ObjectInterface<any>

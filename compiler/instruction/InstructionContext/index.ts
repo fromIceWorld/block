@@ -1,5 +1,5 @@
 import { ObjectInterface } from '../../../common/interface';
-import { Decorator } from '../../../decorators/index';
+import { Decorator, ViewChanges, ViewKeys } from '../../../decorators/index';
 import { θd } from '../../../DocumentAPI/index';
 import { Hook } from '../../../lifeCycle/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
@@ -458,7 +458,21 @@ function resolveDirective(tagName: string, index: number) {
         TNode = TView[offset + index] as elementNode;
     let { attributes, directives } = TNode;
     const InRanges = TView[TViewIndex.InRange]() || [],
-        [, , staticAttributes, , dynamicAttributes, , structure] = attributes;
+        ctx = TView[TViewIndex.Context],
+        [, , staticAttributes, , dynamicAttributes, references, structure] =
+            attributes,
+        localTags = Object.keys(references),
+        viewTagChanges = ctx[ViewChanges],
+        viewTags: string[] = Object.values(ctx[ViewKeys]),
+        matchTag = [];
+    for (let [key, ref] of Object.entries(ctx[ViewKeys])) {
+        if (localTags.includes(ref)) {
+            matchTag.push(key);
+        }
+    }
+    matchTag.forEach((tag) => {
+        viewTagChanges[tag]['currentValue'] = native;
+    });
     for (let dir of InRanges) {
         let [k, v] = dir.chooser;
         if (
@@ -471,6 +485,7 @@ function resolveDirective(tagName: string, index: number) {
         ) {
             let { $type } = dir;
             if ($type == Decorator.Component) {
+                console.log('解析的router', tagName == 'router-view');
                 TView[TViewIndex.Children].push(index);
                 TNode.component = dir;
                 TNode['TView'] = new TemplateView(
@@ -478,6 +493,12 @@ function resolveDirective(tagName: string, index: number) {
                     TNode,
                     native
                 );
+                // @ViewChild
+                matchTag.forEach((tag) => {
+                    if (tag === dir) {
+                        viewTagChanges[tag]['currentValue'] = TNode['TView'];
+                    }
+                });
             } else if ($type == Decorator.Directive) {
                 TView[TViewIndex.Directives].add(index);
                 let dirInstance = new TemplateDirective(
@@ -486,6 +507,12 @@ function resolveDirective(tagName: string, index: number) {
                     native,
                     TNode
                 );
+                // @ViewChild
+                matchTag.forEach((tag) => {
+                    if (tag === dir) {
+                        viewTagChanges[tag]['currentValue'] = dirInstance;
+                    }
+                });
                 Hook(dirInstance[TViewIndex.Context], 'OnBind', native);
                 directives.push(dirInstance);
             }

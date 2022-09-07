@@ -16,7 +16,7 @@ import { TemplateView } from '../TView/TemplateView';
 
 class ViewContainer extends TemplateDynamic {
     previousContext?: ViewDefination[] = [];
-    childrenView: embeddedView[] = [];
+    childrenView: embeddedView | null[] = [];
     currentTView: TemplateView;
     constructor(
         private index: number,
@@ -28,7 +28,6 @@ class ViewContainer extends TemplateDynamic {
         let currentTView = (this.currentTView = TViewFns.currentTView()),
             currentLView = currentTView[TViewIndex.LView];
         this[TViewIndex.Host] = currentLView[index + offset];
-
         this[TViewIndex.Class] = dir;
         this[TViewIndex.LView] = new LogicView();
         this[TViewIndex.TNode] = currentTView[index + offset];
@@ -72,27 +71,28 @@ class ViewContainer extends TemplateDynamic {
                     this[TViewIndex.Host] as HTMLTemplateElement
                 );
                 embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
-                this.childrenView.push(embedded);
+                this.childrenView[i] = embedded;
                 embedded.install();
-                // embedded.detectChanges();
+                this.previousContext![i] = viewsContext[i];
+                (this[TViewIndex.Host] as HTMLTemplateElement).after!(
+                    ...Array.from(embedded[TViewIndex.Host]!.childNodes)
+                );
+            } else if (this.previousContext![i] && !viewsContext[i]) {
+                this.childrenView![i].destroyed();
+                this.previousContext![i] = null;
+                this.childrenView![i][TViewIndex.RootElements].map((index) =>
+                    this.childrenView![i][TViewIndex.LView]![
+                        index + offset
+                    ].remove()
+                );
+                this.childrenView[i] = null;
             } else {
                 this.childrenView![i].update();
             }
         }
-        if (this.previousContext!.length == 0) {
-            this.childrenView.forEach((embeddedView) => {
-                (this[TViewIndex.Host] as HTMLTemplateElement).after!(
-                    ...Array.from(embeddedView[TViewIndex.Host]!.childNodes)
-                );
-            });
-            this.previousContext = viewsContext;
-        } else {
-        }
     }
     destroyed() {
-        this.childrenView.forEach((child) => {
-            child.destroyed();
-        });
+        this.diff([]);
     }
 }
 
@@ -143,10 +143,13 @@ class embeddedView extends TemplateDynamic {
             children = this[TViewIndex.Children];
         for (let child of children) {
             let tNode = this[child + offset];
-            // tNode['TView'].destroyed();
+            tNode['TView'].destroyed();
         }
         Hook(this[TViewIndex.Context], 'OnDestroy');
-        this[TViewIndex.Host]?.replaceChildren();
+        // this[TViewIndex.Host]?.replaceChildren();
+        // this[TViewIndex.RootElements].map((index) =>
+        //     this[TViewIndex.LView]![index + offset].remove()
+        // );
         TViewFns.popContext();
     }
 }

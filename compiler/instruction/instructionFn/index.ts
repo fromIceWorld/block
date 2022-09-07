@@ -419,7 +419,7 @@ class Instruction {
             } else {
                 switch (prefix) {
                     case referenceMark:
-                        references[attributes[i]] = '';
+                        references[attributes[i].slice(1)] = '';
                         break;
                     default:
                         mergeAttributes[attributes[i]] = '';
@@ -494,10 +494,20 @@ class Instruction {
      */
     addListener(eventName: string, callback: string) {
         this.instructionParams.add('listener');
-        let [fn, params] = callback.replace(/[()]/g, ' ').split(' ');
+        let [fn, params = ''] = callback.replace(/[()]/g, ' ').split(' '),
+            paramsToken = params
+                .split(',')
+                .slice(1)
+                .map((param) => {
+                    let matchResult = param.match(/^'[^']+'|"[^"]+"$/);
+                    return matchResult ? param : `ctx.${param}`;
+                })
+                .join(',');
+        console.log('event params', params);
+        // 处理
         this.createFn += `
                         listener('${eventName}',function($event){
-                                            return ctx['${fn}'](${params});
+                                            return ctx['${fn}']($event,${paramsToken});
                                         }, ${this.index});`;
     }
 }

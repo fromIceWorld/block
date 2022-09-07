@@ -54,15 +54,17 @@ class TemplateView extends TemplateDynamic {
     })();
     install() {
         this[TViewIndex.Mode] = ViewMode.install;
-        this.updateInput(this[TViewIndex.Context]);
-        this.createOutput(this[TViewIndex.Context]);
+        this.updateInput(this[TViewIndex.Context]); // 初始化 @Input
+        this.createOutput(this[TViewIndex.Context]); // 初始化 @Output
+        this.createViewChild(this[TViewIndex.Context]); // 初始化 @ViewChild
         this.mergeContextAndDecorators(this[TViewIndex.Context]);
         TViewFns.pushContext(this);
-        Hook(this[TViewIndex.Context], 'OnInit');
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
         console.log(def);
         def.template(ViewMode.install, this[TViewIndex.Context]);
+        Hook(this[TViewIndex.Context], 'OnInit');
+
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].install();
