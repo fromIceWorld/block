@@ -28,7 +28,7 @@ class PlatformRef {
      *平台引导 module
      * @param module 根模块
      */
-    bootstrapModule(module: any, native) {
+    bootstrapModule(module: any, native: Element) {
         let { $bootstrap, $routes } = module;
         if ($bootstrap.length > 0) {
             this.application.registerModule(module);

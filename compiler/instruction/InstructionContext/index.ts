@@ -127,7 +127,7 @@ function elementEnd(tagName: string) {
         }
     }
     // 指令的生命周期
-    tNode.directives.forEach((dir: ObjectConstructor) => {
+    tNode.directives.forEach((dir: ObjectInterface<any>) => {
         Hook(dir[TViewIndex.Context], 'OnInserted', native);
     });
     // 当前节点是组件，就将slot索引存进 [TViewIndex.Slots];
@@ -288,7 +288,7 @@ function updateModelProp(
         } else if (tagName == 'TEXT' || tagName == 'TEXTAREA') {
             native.value = currentValue;
         } else if (tagName == 'SELECT') {
-            Array.from(native.options).forEach((item) => {
+            Array.from(native.options).forEach((item: any) => {
                 if (currentValue.includes(item.value)) {
                     item.selected = true;
                 } else {
@@ -463,9 +463,11 @@ function resolveDirective(tagName: string, index: number) {
             attributes,
         localTags = Object.keys(references),
         viewTagChanges = ctx[ViewChanges],
-        viewTags: string[] = Object.values(ctx[ViewKeys]),
+        viewTags: string[] = Object.values(ctx[ViewKeys] || {}),
         matchTag = [];
-    for (let [key, ref] of Object.entries(ctx[ViewKeys])) {
+    for (let [key, ref] of Object.entries(
+        (ctx[ViewKeys] as ObjectInterface<string>) || {}
+    )) {
         if (localTags.includes(ref)) {
             matchTag.push(key);
         }
@@ -499,6 +501,7 @@ function resolveDirective(tagName: string, index: number) {
                         viewTagChanges[tag]['currentValue'] = TNode['TView'];
                     }
                 });
+                break;
             } else if ($type == Decorator.Directive) {
                 TView[TViewIndex.Directives].add(index);
                 let dirInstance = new TemplateDirective(
@@ -515,6 +518,7 @@ function resolveDirective(tagName: string, index: number) {
                 });
                 Hook(dirInstance[TViewIndex.Context], 'OnBind', native);
                 directives.push(dirInstance);
+                break;
             }
         }
     }

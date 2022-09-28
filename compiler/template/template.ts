@@ -41,7 +41,7 @@ class TemplateDynamic extends Array {
     [TViewIndex.Slots]?: Object;
     [TViewIndex.Injector]?: StaticInjector;
     [TViewIndex.Module]: any;
-    [TViewIndex.InRange] = () => {
+    [TViewIndex.InRange] = (): Array<any> => {
         return this[TViewIndex.Module] &&
             this[TViewIndex.Module][registerApplication]
             ? this[TViewIndex.Module][registerApplication].inRange || []
@@ -65,13 +65,10 @@ class TemplateDynamic extends Array {
      *
      */
     updateInput(ctx: any): Map<string, { value: any; currentValue: any }> {
-        // 根节点无
-        if (!this[TViewIndex.TNode]) {
-            return new Map([['any', { currentValue: 'any', value: 'any' }]]);
-        }
-        let tNode = this[TViewIndex.TNode],
+        // 根节点 和 embedded无 tNode
+        let tNode = this[TViewIndex.TNode] || new elementNode('', Infinity),
             { finAttributes } = tNode as elementNode,
-            inputKeys = ctx![InputKeys] || [],
+            inputKeys = ctx![InputKeys] || {},
             inputChanges = ctx[InputChanges],
             conflict = new Map();
         for (let [localKey, inputKey] of Object.entries(
@@ -86,9 +83,9 @@ class TemplateDynamic extends Array {
                 currentValue: value,
                 previousValue: currentValue,
             };
-            if (value !== currentValue) {
-                conflict.set(inputKey, { currentValue, value });
-            }
+            // if (value !== currentValue) {
+            conflict.set(inputKey, { currentValue, value });
+            // }
         }
         return conflict;
     }
@@ -149,7 +146,7 @@ class TemplateDynamic extends Array {
             providers = tokens.map((token: any) =>
                 this[TViewIndex.Injector]?.get(token)
             ),
-            ctx = new dir(...providers);
+            ctx = new dir(...(providers as []));
         ctx[InputChanges] = Object.create({});
         ctx[EventChanges] = Object.create({});
         ctx[InjectToken] = [];

@@ -13,9 +13,14 @@ class EventEmitter {
         );
     }
     emit(emitValue: any) {
-        Object.defineProperty(this.event.detail, 'value', {
-            value: emitValue,
-        });
+        if (this.event.detail.hasOwnProperty('value')) {
+            this.event.detail['value'] = emitValue;
+        } else {
+            Object.defineProperty(this.event.detail, 'value', {
+                value: emitValue,
+                writable: true,
+            });
+        }
         (this.event.detail as any).dom.dispatchEvent(this.event);
     }
 }

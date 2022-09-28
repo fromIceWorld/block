@@ -1,9 +1,11 @@
 {
-    "name": "my-world",
-    "version": "0.0.1",
+    "name": "mark5",
+    "version": "0.0.2",
     "description": "view与template的关系库,为了低代码创建。🧩",
-    "main": "./@block",
-    "types": "./@block/index.d.ts",
+    "main": "./lib/index.js",
+    "module": "./lib/esm/index.js",
+    "browser": "./lib/umd/index.js",
+    "types": "./lib/index.d.ts",
     "scripts": {
         "test": "jest",
         "build": "rollup --config",
@@ -15,8 +17,13 @@
         "url": "git+https://github.com/fromIceWorld/block.git"
     },
     "author": "cui bingbing",
+    "keywords": [
+        "低代码库",
+        "MV*",
+        "mark5"
+    ],
     "files": [
-        "dist/*",
+        "lib/*",
         "README.md"
     ],
     "license": "ISC",
@@ -27,12 +34,12 @@
     "devDependencies": {
         "@rollup/plugin-node-resolve": "^13.2.1",
         "@rollup/plugin-typescript": "^8.3.2",
-        "jest": "^27.5.1",
+        "rollup-plugin-dts": "^4.2.2",
+        "rollup-plugin-terser": "^7.0.2",
         "tslib": "^2.3.1",
         "typescript": "^4.6.3"
     },
     "dependencies": {
-        "parse-html-template": "0.0.16",
-        "rollup-plugin-dts": "^4.2.2"
+        "parse-html-template": "0.0.20"
     }
 }

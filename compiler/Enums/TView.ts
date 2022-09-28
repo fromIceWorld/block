@@ -18,5 +18,6 @@ enum TViewIndex {
     EmbeddedView,
     Structures,
     Mode,
+    styleDOM,
 }
 export { TViewIndex };

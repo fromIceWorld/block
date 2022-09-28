@@ -61,10 +61,15 @@ class TemplateView extends TemplateDynamic {
         TViewFns.pushContext(this);
         const def = this.$getDefinition(),
             children: number[] = this[TViewIndex.Children];
-        console.log(def);
+        // 加载css
+        const { styles } = this[TViewIndex.Class]!,
+            styleDOM = document.createElement('style');
+        styleDOM.innerHTML = styles;
+        document.head.append(styleDOM);
+        this[TViewIndex.styleDOM] = styleDOM;
+        console.log(def, styles);
         def.template(ViewMode.install, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnInit');
-
         for (let child of children) {
             let tNode = this[child + offset];
             tNode['TView'].install();
@@ -86,27 +91,27 @@ class TemplateView extends TemplateDynamic {
         this[TViewIndex.Mode] = ViewMode.update;
         const conflict = this.updateInput(this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnInputChanges', conflict);
-        if (conflict.size) {
-            TViewFns.pushContext(this);
-            let def = this.$getDefinition(),
-                children = this[TViewIndex.Children];
-            def && def.template(ViewMode.update, this[TViewIndex.Context]);
-            Hook(this[TViewIndex.Context], 'OnUpdated', conflict);
-            for (let child of children) {
-                let tNode = this[child + offset];
-                tNode['TView'].update();
-            }
-            Hook(this[TViewIndex.Context], 'OnViewUpdated', conflict);
-            // 指令生命周期
-            const nodeHasDirectiveIndex = this[TViewIndex.Directives];
-            for (let index of nodeHasDirectiveIndex) {
-                let tNode = this[index + offset];
-                for (let dir of tNode.directives) {
-                    Hook(dir[TViewIndex.Context], 'OnViewUpdated');
-                }
-            }
-            TViewFns.popContext();
+        // if (conflict.size) {
+        TViewFns.pushContext(this);
+        let def = this.$getDefinition(),
+            children = this[TViewIndex.Children];
+        def && def.template(ViewMode.update, this[TViewIndex.Context]);
+        Hook(this[TViewIndex.Context], 'OnUpdated', conflict);
+        for (let child of children) {
+            let tNode = this[child + offset];
+            tNode['TView'].update();
         }
+        Hook(this[TViewIndex.Context], 'OnViewUpdated', conflict);
+        // 指令生命周期
+        const nodeHasDirectiveIndex = this[TViewIndex.Directives];
+        for (let index of nodeHasDirectiveIndex) {
+            let tNode = this[index + offset];
+            for (let dir of tNode.directives) {
+                Hook(dir[TViewIndex.Context], 'OnViewUpdated');
+            }
+        }
+        TViewFns.popContext();
+        // }
         this[TViewIndex.Mode] = ViewMode.sleep;
     }
     // Tview 不应该被展示，也不想被销毁时，可以进行休眠。
@@ -122,6 +127,8 @@ class TemplateView extends TemplateDynamic {
         }
         Hook(this[TViewIndex.Context], 'OnDestroy');
         this[TViewIndex.Host]?.replaceChildren();
+        // 卸载style
+        this[TViewIndex.styleDOM].remove();
         TViewFns.popContext();
     }
 }
