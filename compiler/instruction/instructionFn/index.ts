@@ -202,8 +202,7 @@ class Instruction {
                                             ctx.cd.detectChanges();
                                         }, ${this.index});`;
             }
-            this.updateFn += `
-                    updateProperty(${this.index});`;
+            this.updateProperty();
         }
     }
     /**

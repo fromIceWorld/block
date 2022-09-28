@@ -30,7 +30,6 @@ export default [
         ],
         strict: false,
         sourcemap: 'inline',
-        external: ['parse-html-template'],
         plugins: [
             resolve(),
             typescript({
@@ -56,7 +55,6 @@ export default [
         ],
         strict: false,
         sourcemap: 'inline',
-        external: ['parse-html-template'],
         plugins: [
             resolve(),
             typescript({

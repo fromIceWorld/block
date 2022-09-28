@@ -4,7 +4,7 @@ import { θd } from '../../../DocumentAPI/index';
 import { Hook } from '../../../lifeCycle/index';
 import { AttributeType, elementType, TViewIndex } from '../../Enums/index';
 import { ViewMode } from '../../index';
-import { ViewContainer } from '../../template/embedded/index';
+import { embeddedView, ViewContainer } from '../../template/embedded/index';
 import { TemplateDirective } from '../../template/TDirective/index';
 import { commentNode, elementNode, textNode } from '../../template/TNode/index';
 import { TemplateView } from '../../template/TView/TemplateView';
@@ -80,10 +80,17 @@ function createNative(tNode: elementNode, index: number) {
     let TView = currentTView(),
         LView = TView[TViewIndex.LView],
         { tagName, finAttributes } = tNode,
-        slotName: string = finAttributes['name'],
-        parentTView = TView[TViewIndex.Parent],
+        slotName: string = finAttributes['name'];
+    // 嵌入视图[if,for]无自己的slot，
+    while (TView instanceof ViewContainer || TView instanceof embeddedView) {
+        TView = TView[TViewIndex.Parent];
+    }
+    let parentTView = TView[TViewIndex.Parent],
         dom = θd.createElement(tagName);
-    while (parentTView instanceof ViewContainer) {
+    while (
+        parentTView instanceof ViewContainer ||
+        TView instanceof embeddedView
+    ) {
         parentTView = parentTView[TViewIndex.Parent];
     }
     if (tagName == 'slot') {
@@ -94,10 +101,7 @@ function createNative(tNode: elementNode, index: number) {
             );
         filters = slotsDOM.filter(
             (d: Element) =>
-                (slotName &&
-                    d.nodeType == elementType.Element &&
-                    d.getAttribute('slot') == slotName) ||
-                (!slotName && d.nodeType == elementType.Text)
+                (slotName && d.slot === slotName) || (!slotName && !d.slot)
         );
 
         dom.append(...filters);
