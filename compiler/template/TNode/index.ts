@@ -50,7 +50,6 @@ class elementNode extends TNode {
             {},
             references,
             {},
-            {},
             model,
         ];
         Object.keys(structures).forEach(

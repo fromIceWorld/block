@@ -157,7 +157,6 @@ function updateProperty(index: number) {
         dynamicAttrubute,
         reference,
         structure,
-        ,
         model,
     ] = attributes;
     if (Object.keys(structure).length > 0) {
@@ -299,6 +298,10 @@ function updateModelProp(
                     item.selected = false;
                 }
             });
+        } else {
+            // 应用到其他标签上：例如组件
+            native.value = currentValue;
+            finAttributes[value] = currentValue;
         }
     }
 }
@@ -320,7 +323,23 @@ function updateStyle(
         context = TView[TViewIndex.Context],
         styleObj = Object.create({});
     fns.forEach((fn) => {
-        Object.assign(styleObj, fn(context));
+        let newStyle = fn(context);
+        if (typeof newStyle === 'string') {
+            newStyle = newStyle
+                .split(';')
+                .filter((objString) => {
+                    return objString.trim();
+                })
+                .reduce((pre, cur) => {
+                    let [k, v] = cur.split(':');
+                    return {
+                        ...pre,
+                        [k.trim()]: v.trim(),
+                    };
+                }, {});
+        }
+        // 接收到style 字符串
+        Object.assign(styleObj, newStyle);
     });
     for (let key of Object.keys(styleObj)) {
         styleMap.set(key, styleObj[key]);

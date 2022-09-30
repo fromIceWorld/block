@@ -74,7 +74,10 @@ class TemplateDynamic extends Array {
         for (let [localKey, inputKey] of Object.entries(
             inputKeys as ObjectInterface<string>
         )) {
-            let value = finAttributes[inputKey] || ctx[inputKey],
+            let value =
+                    finAttributes[inputKey] === undefined
+                        ? ctx[inputKey]
+                        : finAttributes[inputKey],
                 currentValue = inputChanges[localKey]
                     ? inputChanges[localKey]['currentValue']
                     : undefined;

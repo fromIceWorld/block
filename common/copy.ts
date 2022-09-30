@@ -2,6 +2,12 @@ import { ObjectInterface } from './interface';
 
 let cache = new Map();
 function copy(target: string | ObjectInterface<any> | number | Array<any>) {
+    cache.clear();
+    return copySwitch(target);
+}
+function copySwitch(
+    target: string | ObjectInterface<any> | number | Array<any>
+) {
     const type = {}.toString.call(target);
     switch (type) {
         case '[object Number]':
@@ -20,7 +26,7 @@ function copyObject(target: ObjectInterface<any>) {
     let result: ObjectInterface<any> = {};
     cache.set(target, result);
     Object.keys(target).forEach((key) => {
-        result[key] = copy(target[key]);
+        result[key] = copySwitch(target[key]);
     });
     return result;
 }
@@ -31,7 +37,7 @@ function copyArray(target: Array<any>) {
     let result = new Array();
     cache.set(target, result);
     for (let i = 0; i < target.length; i++) {
-        result[i] = copy(target[i]);
+        result[i] = copySwitch(target[i]);
     }
     return result;
 }

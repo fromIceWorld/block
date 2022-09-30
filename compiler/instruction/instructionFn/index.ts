@@ -159,8 +159,8 @@ class Instruction {
         for (let [name, value] of Object.entries(model)) {
             let { type } = mergeAttributes,
                 eventName = name ? name : 'input';
+            this.instructionParams.add('listener');
             if (tagName == 'input') {
-                this.instructionParams.add('listener');
                 if (type == 'checkbox') {
                     this.createFn += `
                     listener('change',function($event){
@@ -199,6 +199,15 @@ class Instruction {
                                                     ctx['${value}'].push(item.value)
                                                 }
                                             })
+                                            ctx.cd.detectChanges();
+                                        }, ${this.index});`;
+            } else {
+                // % 应用到组件上
+                // 添加事件监听，将数据更新到组件上，
+                // 在组件更新时调用 updateProperty 函数，将value更新到组件上
+                this.createFn += `
+                        listener('${eventName}',function($event){
+                                            ctx['${value}'] = $event.detail.value;
                                             ctx.cd.detectChanges();
                                         }, ${this.index});`;
             }
@@ -260,7 +269,7 @@ class Instruction {
             Object.entries(events).forEach(([eventName, fn]) => {
                 this.addListener(eventName, fn as string);
             });
-            // 解析 % 模型
+            // 解析 % 双向数据模型
             this.resolveModel(tagName, element.resolvedAttributes);
             this.index++;
             this.resolveTNodes(children);
@@ -440,7 +449,9 @@ class Instruction {
             dynamicAttributes,
             references,
             structures,
+            model,
         ] = this.attributes[this.index];
+        console.log(model);
         if (
             Object.keys(dynamicStyle).length > 0 ||
             Object.keys(dynamicClasses).length > 0 ||
@@ -502,7 +513,6 @@ class Instruction {
                     return matchResult ? param : `ctx.${param}`;
                 })
                 .join(',');
-        console.log('event params', params);
         // 处理
         this.createFn += `
                         listener('${eventName}',function($event){
