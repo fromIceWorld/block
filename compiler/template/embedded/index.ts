@@ -16,7 +16,7 @@ import { TemplateView } from '../TView/TemplateView';
 
 class ViewContainer extends TemplateDynamic {
     previousContext?: ViewDefination[] = [];
-    childrenView: embeddedView | null[] = [];
+    childrenView: embeddedView[] = [];
     currentTView: TemplateView;
     constructor(
         private index: number,
@@ -59,42 +59,71 @@ class ViewContainer extends TemplateDynamic {
         TViewFns.popContext();
     }
     diff(viewsContext: any[]) {
-        for (
-            let i = 0;
-            i < Math.max(viewsContext.length, this.previousContext!.length);
-            i++
-        ) {
-            if (!this.previousContext![i] && viewsContext[i]) {
-                let embedded = new embeddedView(
-                    this.def,
-                    viewsContext[i],
-                    this[TViewIndex.Host] as HTMLTemplateElement
-                );
-                embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
-                this.childrenView[i] = embedded;
-                embedded.install();
-                this.previousContext![i] = viewsContext[i];
-                (this[TViewIndex.Host] as HTMLTemplateElement).after!(
-                    ...Array.from(embedded[TViewIndex.Host]!.childNodes)
-                );
-                this.childrenView[i][TViewIndex.Context] = viewsContext[i];
-            } else if (this.previousContext![i] && !viewsContext[i]) {
-                this.childrenView![i].destroyed();
-                this.previousContext?.splice(i, 1);
-                this.childrenView![i][TViewIndex.RootElements].map(
-                    (index: number) =>
-                        this.childrenView![i][TViewIndex.LView]![
-                            index + offset
-                        ].remove()
-                );
-                this.childrenView[i] = {};
-            } else if (this.previousContext![i] && viewsContext[i]) {
-                // 更新embedded 的上下文
-                this.childrenView[i][TViewIndex.Context] =
-                    viewsContext[i] || {};
-                this.childrenView![i].update();
-            }
+        // 销毁旧的
+        for (let i = 0; i < this.childrenView!.length; i++) {
+            this.childrenView![i].destroyed();
+            this.childrenView![i][TViewIndex.RootElements].map(
+                (index: number) =>
+                    this.childrenView![i][TViewIndex.LView]![
+                        index + offset
+                    ].remove()
+            );
         }
+        this.childrenView = [];
+        let domlist = [];
+        // 创建新的
+        for (let i = 0; i < viewsContext.length; i++) {
+            let embedded = new embeddedView(
+                this.def,
+                viewsContext[i],
+                this[TViewIndex.Host] as HTMLTemplateElement
+            );
+            embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
+            this.childrenView[i] = embedded;
+            embedded.install();
+            domlist.push(...Array.from(embedded[TViewIndex.Host]!.childNodes));
+        }
+        this[TViewIndex.Host]!.after!(...domlist);
+        // for (
+        //     let i = 0;
+        //     i < Math.max(viewsContext.length, this.previousContext!.length);
+        //     i++
+        // ) {
+        //     if (!this.previousContext![i] && viewsContext[i]) {
+        //         let embedded = new embeddedView(
+        //             this.def,
+        //             viewsContext[i],
+        //             this[TViewIndex.Host] as HTMLTemplateElement
+        //         );
+        //         embedded[TViewIndex.InRange] = this[TViewIndex.InRange];
+        //         this.childrenView[i] = embedded;
+        //         embedded.install();
+        //         this.previousContext![i] = viewsContext[i];
+        //         const viewDOM = Array.from(
+        //             embedded[TViewIndex.Host]!.childNodes
+        //         );
+        //         domlist[domlist.length - 1].after!(
+        //             ...Array.from(embedded[TViewIndex.Host]!.childNodes)
+        //         );
+        //         domlist = [...viewDOM];
+        //         this.childrenView[i][TViewIndex.Context] = viewsContext[i];
+        //     } else if (this.previousContext![i] && !viewsContext[i]) {
+        //         this.childrenView![i].destroyed();
+        //         this.previousContext?.splice(i, 1);
+        //         this.childrenView![i][TViewIndex.RootElements].map(
+        //             (index: number) =>
+        //                 this.childrenView![i][TViewIndex.LView]![
+        //                     index + offset
+        //                 ].remove()
+        //         );
+        //         this.childrenView[i] = {};
+        //     } else if (this.previousContext![i] && viewsContext[i]) {
+        //         // 更新embedded 的上下文
+        //         this.childrenView[i][TViewIndex.Context] =
+        //             viewsContext[i] || {};
+        //         this.childrenView![i].update();
+        //     }
+        // }
     }
     destroyed() {
         Hook(this[TViewIndex.Context], 'OnDestroy');
