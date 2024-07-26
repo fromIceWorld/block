@@ -67,7 +67,6 @@ class TemplateView extends TemplateDynamic {
         styleDOM.innerHTML = styles;
         document.head.append(styleDOM);
         this[TViewIndex.styleDOM] = styleDOM;
-        console.log(def, styles);
         def.template(ViewMode.install, this[TViewIndex.Context]);
         Hook(this[TViewIndex.Context], 'OnInit');
         for (let child of children) {

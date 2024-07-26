@@ -1,8 +1,11 @@
 import { Module } from '../../index';
-import { formGroupDirective } from '../form-group-directive';
+import {
+    formControlDirective,
+    formGroupDirective,
+} from '../form-group-directive';
 
 @Module({
-    declarations: [formGroupDirective],
+    declarations: [formGroupDirective, formControlDirective],
     exports: [],
 })
 class formsModule {}

@@ -313,7 +313,7 @@ class Instruction {
             hasInterpolation = false,
             [start, end] = this.configuration.interpolationSyntax,
             interpolationRegExp = new RegExp(
-                `${start}\\s*[a-zA-Z0-9!.'"\\[\\]]*\\s*${end}`,
+                `${start}\\s*[a-zA-Z0-9!.'"\\[\\]\\(\\)]*\\s*${end}`,
                 'g'
             ),
             { content } = element;
@@ -451,7 +451,6 @@ class Instruction {
             structures,
             model,
         ] = this.attributes[this.index];
-        console.log(model);
         if (
             Object.keys(dynamicStyle).length > 0 ||
             Object.keys(dynamicClasses).length > 0 ||
